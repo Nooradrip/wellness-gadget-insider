@@ -23,7 +23,13 @@ export default function BlogHomePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Breadcrumbs links={[]} currentPage="Blog" />
+      {/* Added Home breadcrumb */}
+      <Breadcrumbs 
+        links={[
+          { href: '/', text: 'Home' }
+        ]} 
+        currentPage="Pet Supplies Reviews" 
+      />
 
       <h1 className="text-4xl font-bold mb-8">Pet Supplies Review Categories</h1>
 

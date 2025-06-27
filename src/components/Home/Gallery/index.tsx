@@ -1,23 +1,9 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ExpertData } from '@/components/data/petProducts'  // Correct path
-
-// Custom loader for Amazon images
-const amazonLoader = ({ src, width, quality }: { 
-  src: string; 
-  width: number; 
-  quality?: number 
-}) => {
-  return src; // Return the original source URL unchanged
-};
+import { ExpertData } from '@/components/data/petProducts'
 
 const Gallery = () => {
-  // Check if an image is from Amazon
-  const isAmazonImage = (src: string) => {
-    return src.includes('m.media-amazon.com');
-  };
-
   return (
     <section className="py-16 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4">
@@ -32,7 +18,7 @@ const Gallery = () => {
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
           {ExpertData.map((product) => {
-            const isAmazon = isAmazonImage(product.imgSrc);
+            const isAmazon = product.imgSrc.includes('m.media-amazon.com');
             
             return (
               <div
@@ -42,11 +28,11 @@ const Gallery = () => {
                 <div className='relative h-60 w-full bg-white dark:bg-gray-700'>
                   <Image
                     src={product.imgSrc}
-                    loader={isAmazon ? amazonLoader : undefined} // Apply loader only to Amazon images
                     alt={`${product.name} ${product.profession}`}
                     fill
                     className='object-contain p-4'
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    unoptimized={isAmazon} // Fix for Amazon images
                   />
                 </div>
 

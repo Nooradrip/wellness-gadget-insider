@@ -48,7 +48,7 @@ export const ExpertData: ExpertProduct[] = [
     profession: 'Automatic Cat Feeder',
     name: 'PETLIBRO',
     imgSrc: 'https://m.media-amazon.com/images/I/41IyqubT+HL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0B1TMLL3F',
+    productLink: 'https://www.amazon.com/dp/B0B1TMLL3F?tag=petgadgetinsider-20&th=1',
     price: '$69.99',
     features: [
       "Smart APP Control: Wi-Fi enabled for remote feeding",
@@ -61,7 +61,7 @@ export const ExpertData: ExpertProduct[] = [
     profession: 'Automatic Feeder',
     name: 'IMIPAW',
     imgSrc: 'https://m.media-amazon.com/images/I/31smh+Fyk0L._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0BR5VST5N',
+    productLink: 'https://www.amazon.com/dp/B0BR5VST5N?tag=petgadgetinsider-20&th=1',
     price: '$35.99',
     features: [
       "Programmable timed feeding",
@@ -74,7 +74,7 @@ export const ExpertData: ExpertProduct[] = [
     profession: 'Automatic Feeder',
     name: 'VOLUAS',
     imgSrc: 'https://m.media-amazon.com/images/I/31FCol5w8TL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B09LD2CD1L',
+    productLink: 'https://www.amazon.com/dp/B09LD2CD1L?tag=petgadgetinsider-20&th=1',
     price: '$54.99',
     features: [
       "4L/16.9 cup capacity",
@@ -87,7 +87,7 @@ export const ExpertData: ExpertProduct[] = [
     profession: 'Dual Cat Feeder',
     name: 'oneisall',
     imgSrc: 'https://m.media-amazon.com/images/I/41IyqubT+HL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0C5X2G933',
+    productLink: 'https://www.amazon.com/dp/B0C5X2G933?tag=petgadgetinsider-20&th=1',
     price: '$50.99',
     features: [
       "Designed for 2 cats (separate bowls)",

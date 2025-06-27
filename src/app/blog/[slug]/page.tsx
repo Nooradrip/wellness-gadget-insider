@@ -3,49 +3,84 @@ import Image from "next/image";
 import Script from "next/script";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import blogData from "@/data/blog-articles.json";
-import DOMPurify from "dompurify";
-import { JSDOM } from "jsdom";
+// @ts-ignore: Could not find a declaration file for module 'sanitize-html'
+import sanitizeHtml from 'sanitize-html';
 import type { Metadata, ResolvingMetadata } from "next";
 import { getKeywords } from "@/lib/seo-utils";
 import Link from "next/link";
 
-interface BlogArticle {
-  slug: string;
-  pageTitle: string;
-  description: string;
-  metaDescription: string;
-  featuredImageUrl: string;
-  featuredImageAlt: string;
-  mainCategorySlug: string;
-  mainCategoryName: string;
-  subCategorySlug: string;
-  subCategoryName: string;
-  htmlBody: string;
-  isPreformatted: boolean;
-  amazon_link?: string;
-  datePublished: string;
-  dateModified: string;
-  featuredImageHint?: string;
-  titleTag?: string;
-  author?: {
+// Type assertion for blogData to ensure it matches BlogData interface
+const typedBlogData = blogData as {
+  mainCategories: {
+    slug: string;
     name: string;
-    url?: string;
-    image?: string;
-    sameAs?: string[];
-  };
-}
-
-type Props = {
-  params: { slug: string };
+    titleTag: string;
+    metaDescription: string;
+    description: string;
+  }[];
+  subCategories: {
+    mainCategorySlug: string;
+    slug: string;
+    name: string;
+    titleTag: string;
+    metaDescription: string;
+    description: string;
+  }[];
+  articles: {
+    slug: string;
+    pageTitle: string;
+    description: string;
+    metaDescription: string;
+    featuredImageUrl: string;
+    featuredImageAlt: string;
+    mainCategorySlug: string;
+    mainCategoryName: string;
+    subCategorySlug: string;
+    subCategoryName: string;
+    htmlBody: string;
+    isPreformatted: boolean;
+    amazon_link?: string;
+    datePublished: string;
+    dateModified: string;
+    featuredImageHint?: string;
+    titleTag?: string;
+    author?: {
+      name: string;
+      url?: string;
+      image?: string;
+      sameAs?: string[];
+    };
+  }[];
+  internalLinks?: {
+    id: string;
+    url: string;
+    text: string;
+  }[];
 };
 
+// FIXED: Removed incorrect Promise type from params
+interface PageProps {
+  params: { 
+    slug: string
+  };
+  searchParams?: Record<string, string | string[]>;
+}
+
+export async function generateStaticParams() {
+  return typedBlogData.articles.map((article) => ({
+    slug: article.slug,
+  }));
+}
+
 export async function generateMetadata(
-  { params }: Props,
+  { params }: PageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const slug = params.slug;
-  const article = blogData.articles.find(
-    (item) => item.slug.toLowerCase() === slug.toLowerCase()
+  const slug = params?.slug || '';
+  const slugParam = slug.trim().toLowerCase();
+  
+  const article = typedBlogData.articles.find(
+    (item) => item.slug.trim().toLowerCase() === slugParam
   );
 
   if (!article) {
@@ -59,6 +94,7 @@ export async function generateMetadata(
   const articleKeywords = getKeywords(article.mainCategorySlug.includes("dog"));
 
   return {
+    metadataBase: new URL('https://petgadgetinsider.org'),
     title: article.titleTag || article.pageTitle,
     description: article.metaDescription || article.description,
     keywords: [...articleKeywords, ...previousKeywords],
@@ -75,7 +111,7 @@ export async function generateMetadata(
       ],
       publishedTime: article.datePublished,
       modifiedTime: article.dateModified || article.datePublished,
-      authors: article.author?.name ? [article.author.name] : undefined,
+      authors: ['Nick Garcia'],
     },
     twitter: {
       card: "summary_large_image",
@@ -86,20 +122,18 @@ export async function generateMetadata(
   };
 }
 
-const window = new JSDOM("").window;
-const domPurify = DOMPurify(window);
-
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
-  const article = blogData.articles.find(
-    (item) => item.slug.toLowerCase() === slug.toLowerCase()
+export default function BlogPostPage({ params }: PageProps) {
+  const slug = params?.slug || '';
+  const slugParam = slug.trim().toLowerCase();
+  
+  const article = typedBlogData.articles.find(
+    (item) => item.slug.trim().toLowerCase() === slugParam
   );
 
   if (!article) {
     return notFound();
   }
 
-  // Function to add asterisk to "Pet Gadget Insider's Top Pick" in the HTML
   const addAsteriskToTopPick = (html: string) => {
     return html.replace(
       /(Pet Gadget Insider's Top Pick)/g, 
@@ -108,8 +142,10 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   };
 
   const parseInternalLinks = (html: string) => {
+    // Safe access to internalLinks with proper fallback
+    const internalLinks = typedBlogData.internalLinks || [];
     const linkMap = new Map(
-      blogData.internalLinks.map((link) => [link.id.toLowerCase(), link])
+      internalLinks.map((link) => [link.id.toLowerCase(), link])
     );
 
     return html.replace(
@@ -133,13 +169,63 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         ? article.htmlBody
         : parseInternalLinks(article.htmlBody);
       
-      // Add asterisk to "Pet Gadget Insider's Top Pick"
       processedHtml = addAsteriskToTopPick(processedHtml);
       
+      processedHtml = processedHtml.replace(
+        /<h2>/g, 
+        '<h2 class="font-bold text-2xl mb-4 mt-8">'
+      );
+      
+      const sanitizedHtml = sanitizeHtml(processedHtml, {
+        allowedTags: [
+          ...sanitizeHtml.defaults.allowedTags,
+          'img', 'svg', 'path', 'line', 'rect', 'circle', 'g', 'text', 'tspan'
+        ],
+        allowedAttributes: {
+          ...sanitizeHtml.defaults.allowedAttributes,
+          a: ['href', 'name', 'target', 'class', 'rel'],
+          img: ['src', 'alt', 'width', 'height', 'class', 'style'],
+          iframe: ['src', 'width', 'height', 'frameborder', 'allowfullscreen'],
+          div: ['class', 'style'],
+          span: ['class', 'style'],
+          h2: ['class', 'style'],
+          table: ['class', 'style', 'border'],
+          thead: ['class', 'style', 'border'],
+          tbody: ['class', 'style', 'border'],
+          tr: ['class', 'style', 'border'],
+          th: ['class', 'style', 'border'],
+          td: ['class', 'style', 'border'],
+          svg: ['width', 'height', 'viewbox', 'xmlns', 'class', 'style'],
+          path: ['d', 'fill', 'stroke', 'stroke-width', 'class', 'style'],
+          line: ['x1', 'y1', 'x2', 'y2', 'stroke', 'stroke-width', 'class', 'style'],
+          rect: ['x', 'y', 'width', 'height', 'rx', 'ry', 'fill', 'stroke', 'stroke-width', 'class', 'style'],
+          circle: ['cx', 'cy', 'r', 'fill', 'stroke', 'stroke-width', 'class', 'style'],
+          g: ['transform', 'class', 'style'],
+          text: ['x', 'y', 'text-anchor', 'class', 'style'],
+          tspan: ['x', 'y', 'dx', 'dy', 'class', 'style']
+        },
+        allowedIframeHostnames: ['www.youtube.com', 'player.vimeo.com'],
+        transformTags: {
+          'a': (tagName, attribs) => {
+            if (attribs.href && attribs.href.startsWith('http')) {
+              return {
+                tagName: 'a',
+                attribs: {
+                  ...attribs,
+                  rel: 'noopener noreferrer nofollow',
+                  target: '_blank'
+                }
+              };
+            }
+            return { tagName, attribs };
+          }
+        }
+      });
+
       return (
         <div
           dangerouslySetInnerHTML={{
-            __html: domPurify.sanitize(processedHtml),
+            __html: sanitizedHtml,
           }}
         />
       );
@@ -153,32 +239,34 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     if (!article.htmlBody) return null;
 
     const faqItems = [];
-    const parser = new JSDOM(article.htmlBody).window.document;
-    const headings = parser.querySelectorAll("h2, h3");
+    const headingRegex = /<h2[^>]*>(.*?)<\/h2>/gi;
+    const headingMatches = article.htmlBody.match(headingRegex) || [];
 
-    headings.forEach((heading) => {
-      let answer = "";
-      let nextElement = heading.nextElementSibling;
-
-      while (
-        nextElement &&
-        !["H2", "H3"].includes(nextElement.tagName.toUpperCase())
-      ) {
-        answer += nextElement.textContent + " ";
-        nextElement = nextElement.nextElementSibling;
+    for (let i = 0; i < headingMatches.length; i++) {
+      const headingMatch = headingMatches[i];
+      const headingContent = headingMatch.replace(/<[^>]+>/g, '').trim();
+      
+      const startIndex = article.htmlBody.indexOf(headingMatch) + headingMatch.length;
+      let endIndex = article.htmlBody.length;
+      
+      if (i < headingMatches.length - 1) {
+        endIndex = article.htmlBody.indexOf(headingMatches[i + 1], startIndex);
       }
-
-      if (answer.trim()) {
+      
+      let answerContent = article.htmlBody.substring(startIndex, endIndex);
+      answerContent = answerContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      
+      if (answerContent) {
         faqItems.push({
           "@type": "Question",
-          name: heading.textContent,
+          name: headingContent,
           acceptedAnswer: {
             "@type": "Answer",
-            text: answer.trim(),
+            text: answerContent,
           },
         });
       }
-    });
+    }
 
     return faqItems.length > 0
       ? {
@@ -221,24 +309,11 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   };
 
   const generateAuthorSchema = () => {
-    if (article.author) {
-      return {
-        "@type": "Person",
-        name: "Nick Garcia",
-        url: article.author.url || "https://petgadgetinsider.org/about",
-        image: article.author.image || "/images/nickgarcia.png",
-        sameAs: article.author.sameAs || [],
-      };
-    }
-
     return {
-      "@type": "Organization",
-      name: "Pet Gadget Insider",
-      url: "https://petgadgetinsider.org",
-      logo: {
-        "@type": "ImageObject",
-        url: "/images/Logo/pet-gadget-insider-logo.png",
-      },
+      "@type": "Person",
+      name: "Nick Garcia",
+      url: "https://petgadgetinsider.org/about",
+      image: "/images/nickgarcia.png"
     };
   };
 
@@ -323,7 +398,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               {
                 "@type": "ListItem",
                 position: 2,
-                name: "Blog",
+                name: "Pet Supplies Reviews",
                 item: "https://petgadgetinsider.org/blog",
               },
               {
@@ -349,12 +424,11 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         }}
       />
 
-      {/* Wrapper for reduced font size */}
       <div className="font-size-reduced">
         <Breadcrumbs
           links={[
             { href: "/", text: "Home" },
-            { href: "/blog", text: "Blog" },
+            { href: "/blog", text: "Pet Supplies Reviews" }, // Changed from "Blog"
             {
               href: `/blog/category/${article.mainCategorySlug}`,
               text: article.mainCategoryName,
@@ -391,6 +465,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             className="object-contain"
             priority
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+            unoptimized
           />
         </div>
 
@@ -418,7 +493,6 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         )}
       </div>
 
-      {/* Nick Blurb - outside reduced font wrapper */}
       <div className="mt-6 md:mt-8 italic text-sm text-gray-600 dark:text-gray-400">
         <p>
           * Pet Gadget Insider uses data-driven technology to present the products 

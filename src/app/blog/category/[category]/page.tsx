@@ -4,51 +4,63 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import blogData from "@/data/blog-articles.json";
 import { Metadata } from "next";
 
-interface MainCategory {
+interface BlogCategory {
   slug: string;
   name: string;
-  description: string;
   titleTag: string;
   metaDescription: string;
 }
 
-interface SubCategory {
+interface BlogSubCategory {
   slug: string;
   name: string;
   description: string;
   mainCategorySlug: string;
-  titleTag: string;
-  metaDescription: string;
+  titleTag?: string;
+  metaDescription?: string;
 }
 
-interface Article {
+interface BlogArticle {
   slug: string;
+  pageTitle: string;
+  description: string;
+  featuredImageUrl: string;
   mainCategorySlug: string;
-  mainCategoryName: string;
   subCategorySlug: string;
 }
 
 interface BlogData {
-  mainCategories: MainCategory[];
-  subCategories: SubCategory[];
-  articles: Article[];
+  mainCategories: BlogCategory[];
+  subCategories: BlogSubCategory[];
+  articles: BlogArticle[];
+  internalLinks?: {
+    id: string;
+    url: string;
+    text: string;
+  }[];
 }
 
 interface PageProps {
-  params: {
+  params: { 
     category: string;
   };
 }
 
-export async function generateMetadata(
-  { params }: PageProps
-): Promise<Metadata> {
+export async function generateStaticParams() {
+  const { mainCategories } = blogData as BlogData;
+  return mainCategories.map((category) => ({
+    category: category.slug,
+  }));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category } = params;
   const { mainCategories } = blogData as BlogData;
   
-  // Find the main category by slug
+  const categorySlug = category?.trim().toLowerCase() || '';
+  
   const mainCategory = mainCategories.find(
-    cat => cat.slug?.trim().toLowerCase() === category.trim().toLowerCase()
+    cat => cat.slug?.trim().toLowerCase() === categorySlug
   );
 
   if (!mainCategory) {
@@ -59,6 +71,7 @@ export async function generateMetadata(
   }
 
   return {
+    metadataBase: new URL('https://petgadgetinsider.org'),
     title: mainCategory.titleTag,
     description: mainCategory.metaDescription,
     openGraph: {
@@ -72,23 +85,23 @@ export async function generateMetadata(
   };
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+export default function CategoryPage({ params }: { params: { category: string } }) {
   const { category } = params;
   const { mainCategories, subCategories, articles } = blogData as BlogData;
 
-  // Find the main category
+  const categorySlug = category?.trim().toLowerCase() || '';
+  
   const mainCategory = mainCategories.find(
-    cat => cat.slug?.trim().toLowerCase() === category.trim().toLowerCase()
+    cat => cat.slug?.trim().toLowerCase() === categorySlug
   );
 
   if (!mainCategory) {
     notFound();
   }
 
-  // Find subcategories for this main category
   const filteredSubCategories = subCategories.filter((sub) => {
     const mainCatSlug = sub.mainCategorySlug?.trim().toLowerCase() ?? "";
-    return mainCatSlug === category.trim().toLowerCase();
+    return mainCatSlug === categorySlug;
   });
 
   if (filteredSubCategories.length === 0) {
@@ -97,18 +110,16 @@ export default async function CategoryPage({ params }: PageProps) {
 
   const subCategoriesWithCounts = filteredSubCategories.map((sub) => {
     const subSlug = sub.slug?.trim().toLowerCase() ?? "";
-    const reqCategory = category.trim().toLowerCase();
 
     const articleCount = articles.filter((article) => {
       const artMainCat = article.mainCategorySlug?.trim().toLowerCase() ?? "";
       const artSubCat = article.subCategorySlug?.trim().toLowerCase() ?? "";
-      return artMainCat === reqCategory && artSubCat === subSlug;
+      return artMainCat === categorySlug && artSubCat === subSlug;
     }).length;
 
     return { ...sub, articleCount };
   });
 
-  // Fixed syntax error here - removed extra parenthesis
   const totalArticles = subCategoriesWithCounts.reduce(
     (sum, sub) => sum + sub.articleCount,
     0
@@ -118,7 +129,8 @@ export default async function CategoryPage({ params }: PageProps) {
     <div className="container mx-auto px-4 py-8">
       <Breadcrumbs
         links={[
-          { href: '/blog', text: 'Blog' }
+          { href: '/', text: 'Home' }, // Added Home
+          { href: '/blog', text: 'Pet Supplies Reviews' } // Changed from 'Blog'
         ]}
         currentPage={mainCategory.name}
       />

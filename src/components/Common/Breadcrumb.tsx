@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { BreadcrumbProps } from "../../types/breadcrumb"; // Adjust the import path based on your project structure
+
+// Define the BreadcrumbProps interface locally
+interface BreadcrumbProps {
+  pageName: string;
+  pageDescription?: string;
+}
 
 const Breadcrumb: React.FC<BreadcrumbProps> = ({
   pageName,
@@ -15,9 +20,11 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
               <h1 className="text-black mb-4 text-3xl font-bold sm:text-4xl md:text-[40px] md:leading-[1.2] dark:text-white">
                 {pageName}
               </h1>
-              <p className="text-black dark:text-black-6 mb-5 text-base">
-                {pageDescription}
-              </p>
+              {pageDescription && (
+                <p className="text-black dark:text-black-6 mb-5 text-base">
+                  {pageDescription}
+                </p>
+              )}
 
               <ul className="flex items-center justify-center gap-[10px]">
                 <li>

@@ -1,4 +1,16 @@
+import React from 'react';
 import Link from 'next/link';
+
+// Define missing types
+interface BreadcrumbLink {
+  href: string;
+  text: string;
+}
+
+interface BreadcrumbProps {
+  pageName: string;
+  pageDescription?: string;
+}
 
 export default function Breadcrumbs({
   pageName,

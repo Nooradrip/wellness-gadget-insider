@@ -6,22 +6,35 @@ export default function ClientLinkHandler() {
   const router = useRouter()
 
   useEffect(() => {
-    // This will convert all links after page loads
-    const convertLinks = () => {
-      document.querySelectorAll('a[href^="/"]').forEach(link => {
-        link.onclick = (e) => {
-          e.preventDefault()
-          router.push(link.getAttribute('href') || '/')
-        }
-      })
+    const handleClick = (e: MouseEvent) => {
+      // Skip if user is holding modifier keys (ctrl/cmd, shift, alt)
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      
+      // Find closest anchor element
+      const target = e.target as Element
+      const anchor = target.closest('a[href^="/"]')
+      
+      if (!anchor) return
+      
+      // Skip if link has target="_blank" or download attribute
+      const targetAttr = anchor.getAttribute('target')
+      if (targetAttr && targetAttr !== '_self') return
+      if (anchor.hasAttribute('download')) return
+      
+      // Get href and prevent default navigation
+      const href = anchor.getAttribute('href')
+      if (!href) return
+      
+      e.preventDefault()
+      router.push(href)
     }
 
-    // Run immediately and whenever content changes
-    convertLinks()
-    const observer = new MutationObserver(convertLinks)
-    observer.observe(document.body, { subtree: true, childList: true })
+    // Add single event listener to document
+    document.addEventListener('click', handleClick)
     
-    return () => observer.disconnect()
+    return () => {
+      document.removeEventListener('click', handleClick)
+    }
   }, [router])
 
   return null

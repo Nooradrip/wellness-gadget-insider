@@ -1,6 +1,13 @@
 import React, { FC } from "react";
 import Image from "next/image";
-import { Blog } from "@/types/blog";
+// Fix: Define Blog type locally since it's not exported from @/types/blog
+type Blog = {
+  title: string;
+  coverImage: string;
+  excerpt: string;
+  date: string;
+  slug: string;
+};
 import { format } from "date-fns";
 import Link from "next/link";
 

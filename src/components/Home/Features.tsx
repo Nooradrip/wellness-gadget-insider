@@ -29,7 +29,7 @@ const Features = () => {
               <div className="rounded-full flex justify-center absolute -top-16 left-0 right-0 mx-auto w-3/4">
                 <Image
                   src={items.imgSrc}
-                  alt={items.imgAlt || items.heading}
+                  alt={items.heading}
                   width={200}
                   height={200}
                   className="object-contain h-auto"

@@ -1,6 +1,6 @@
 import React from 'react';
 import Hero from '@/components/Home/Hero';
-import Features from '@/components/Home/Features.tsx';
+import Features from '@/components/Home/Features'; // Removed .tsx extension
 import Cook from '@/components/Home/Cook';
 import Gallery from '@/components/Home/Gallery';
 import { Metadata } from 'next';

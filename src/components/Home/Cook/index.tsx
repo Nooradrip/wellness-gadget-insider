@@ -10,12 +10,12 @@ const Cook = () => {
           <Image
             src='/images/Logo/pet-gadget-insider-logo.png'
             alt='pet-gadget-logo'
-            width={231}   // Half of original 463
-            height={311} // Half of original 622
+            width={231}
+            height={311}
             className='object-contain'
           />
         </div>
-        <div className='grid grid-cols-1 lg:grid-cols-12 gap-5'> {/* Removed my-16/mb-16 */}
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-5'>
           <div className='col-span-6 flex justify-start'>
             <Image
               src='/images/cat.png'

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { Icon } from '@iconify/react';
 
 export default function SearchBar() {
   const [query, setQuery] = useState('');
@@ -11,10 +11,12 @@ export default function SearchBar() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
+    const trimmedQuery = query.trim();
+    if (trimmedQuery) {
       setIsLoading(true);
       try {
-        router.push(`/search/${encodeURIComponent(query.trim())}`);
+        // Use URL-friendly format without additional transformations
+        router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
       } catch (error) {
         console.error("Navigation error:", error);
       } finally {
@@ -43,7 +45,10 @@ export default function SearchBar() {
           {isLoading ? (
             <span className="loading-spinner h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent animate-spin" />
           ) : (
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 hover:text-blue-500" />
+            <Icon 
+              icon="heroicons:magnifying-glass" 
+              className="h-5 w-5 text-gray-400 hover:text-blue-500" 
+            />
           )}
         </button>
       </div>

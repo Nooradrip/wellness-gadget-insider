@@ -5,7 +5,6 @@ import Link from 'next/link'
 const Hero = () => {
   return (
     <section id='home-section' className='bg-gray-50 dark:bg-gray-700'>
-      {/* Removed all container padding and negative margins to pull content up */}
       <div className='container mx-auto lg:max-w-(--breakpoint-xl) md:max-w-(--breakpoint-md) px-4 -mt-6'>
         <div className='grid grid-cols-1 lg:grid-cols-12 items-start'>
           <div className='col-span-6'>
