@@ -8,8 +8,9 @@
     "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
     "start": "node ./node_modules/next/dist/bin/next start",
     "lint": "node ./node_modules/next/dist/bin/next lint",
-    "postinstall": "echo 'Locked to Next.js 14.2.30 - DO NOT UPGRADE'",
-    "vercel-build": "rm -rf node_modules && npm install --legacy-peer-deps --force && node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build"
+    "preinstall": "npx json -f package.json -e 'this.dependencies.next=\"14.2.30\"'",
+    "postinstall": "echo 'LOCKED TO NEXT.JS 14.2.30' && npm list next",
+    "vercel-build": "npm ci --prefer-offline --legacy-peer-deps && node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -64,12 +65,14 @@
   },
   "resolutions": {
     "next": "14.2.30",
+    "**/**/next": "14.2.30",
     "@next/swc-darwin-x64": "14.2.30",
     "@next/swc-linux-x64-gnu": "14.2.30",
     "@next/swc-linux-x64-musl": "14.2.30",
     "@next/swc-win32-x64-msvc": "14.2.30"
   },
   "overrides": {
-    "next": "14.2.30"
+    "next": "14.2.30",
+    "@next/swc-*": "14.2.30"
   }
 }

@@ -12,7 +12,7 @@
       "NEXT_TELEMETRY_DISABLED": "1"
     }
   },
-  "installCommand": "npm install --legacy-peer-deps --force",
+  "installCommand": "npm ci --prefer-offline --legacy-peer-deps",
   "framework": "nextjs",
   "nodeVersion": "18.x"
 }
