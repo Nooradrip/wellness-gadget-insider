@@ -11,13 +11,14 @@ const font = Poppins({
   display: 'swap',
 })
 
-// Changed metadata template to remove duplication
 export const metadata: Metadata = {
   title: {
     default: 'Pet Gadget Insider',
-    template: '%s', // Removed " | Pet Gadget Insider" from template
+    template: '%s',
   },
   description: 'Expert reviews of smart pet products and gadgets',
+  // ADDED METADATABASE TO FIX WARNING
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
 }
 
 export default function RootLayout({
