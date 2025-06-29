@@ -1,4 +1,3 @@
-// src/app/api/search/route.ts
 import { NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs/promises';
@@ -34,12 +33,13 @@ export async function GET(request: Request) {
         url: `/blog/${article.slug}`,
         title: article.pageTitle,
         description: article.metaDescription || article.description,
+        breadcrumbs: article.breadcrumbs || '',
         score
       };
     })
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 10); // Limit to 10 best results
+    .slice(0, 10);
 
     return NextResponse.json(results);
     

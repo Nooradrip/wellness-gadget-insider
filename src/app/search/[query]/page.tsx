@@ -84,6 +84,11 @@ export default async function SearchPage({ params }: PageProps) {
             <article key={result.url} className="bg-white p-6 rounded-lg shadow border border-gray-100">
               <div className="flex justify-between items-start">
                 <div>
+                  {result.breadcrumbs && (
+                    <div className="text-sm text-gray-500 mb-1">
+                      {result.breadcrumbs}
+                    </div>
+                  )}
                   <h2 className="text-xl font-semibold mb-2">
                     <Link href={result.url} className="text-blue-600 hover:underline">
                       {result.title}

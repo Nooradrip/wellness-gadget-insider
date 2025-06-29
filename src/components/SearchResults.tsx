@@ -1,4 +1,3 @@
-// components/SearchResults.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -14,6 +13,13 @@ export default function SearchResults({ query }: { query: string }) {
       try {
         setLoading(true);
         setError(null);
+        
+        if (!query.trim()) {
+          setResults([]);
+          setLoading(false);
+          return;
+        }
+
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         
         if (!res.ok) {
@@ -31,18 +37,13 @@ export default function SearchResults({ query }: { query: string }) {
       }
     };
 
-    if (query.trim()) {
-      fetchResults();
-    } else {
-      setResults([]);
-      setLoading(false);
-    }
+    fetchResults();
   }, [query]);
 
   if (loading) {
     return (
       <div className="p-8 text-center">
-        <div className="inline-block h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="inline-block h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="mt-2">Searching for "{query}"...</p>
       </div>
     );
@@ -66,28 +67,35 @@ export default function SearchResults({ query }: { query: string }) {
         <div className="space-y-6">
           {results.map((result) => (
             <div key={result.url} className="p-6 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+              {result.breadcrumbs && (
+                <div className="text-sm text-gray-500 mb-1">
+                  {result.breadcrumbs}
+                </div>
+              )}
               <Link href={result.url} className="block">
                 <h2 className="text-xl font-semibold text-primary hover:underline">
                   {result.title}
+                  {result.score >= 5 && (
+                    <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                      Top Match
+                    </span>
+                  )}
                 </h2>
                 {result.description && (
                   <p className="text-gray-600 mt-2">{result.description}</p>
                 )}
-                <div className="mt-2 text-sm text-gray-400">
-                  {new URL(result.url, window.location.origin).pathname}
-                </div>
               </Link>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-lg">
-            No results found for <span className="font-semibold">"{query}"</span>
-          </p>
-          <p className="text-gray-500 mt-2">
-            Try different keywords or check your spelling
-          </p>
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+          <p>No results found for "{query}". Try different keywords.</p>
+          <div className="mt-4">
+            <Link href="/blog" className="text-blue-600 hover:underline">
+              Browse all articles
+            </Link>
+          </div>
         </div>
       )}
     </div>
