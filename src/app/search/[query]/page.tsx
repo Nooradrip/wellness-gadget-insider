@@ -41,13 +41,16 @@ export default async function SearchPage({ params }: PageProps) {
   
   let results = [];
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/search?q=${encodeURIComponent(normalizedQuery)}`,
-      { next: { revalidate: 3600 } }
-    );
+    const apiUrl = `/api/search?q=${encodeURIComponent(normalizedQuery)}`;
+    
+    const response = await fetch(apiUrl, {
+      next: { revalidate: 3600 },
+      cache: 'no-store'
+    });
     
     if (!response.ok) {
-      throw new Error(`Search API failed with status ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Search API failed with status ${response.status}: ${errorText}`);
     }
     
     results = await response.json();
@@ -58,7 +61,7 @@ export default async function SearchPage({ params }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">
-        Results for: <span className="text-primary">"{decodedQuery}"</span>
+        Results for: <span className="text-blue-600">"{decodedQuery}"</span>
         {results.length > 0 && (
           <span className="text-sm font-normal text-gray-500 ml-2">
             ({results.length} matches)
@@ -70,7 +73,7 @@ export default async function SearchPage({ params }: PageProps) {
         <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
           <p>No results found for "{decodedQuery}". Try different keywords.</p>
           <div className="mt-4">
-            <Link href="/blog" className="text-primary hover:underline">
+            <Link href="/blog" className="text-blue-600 hover:underline">
               Browse all articles
             </Link>
           </div>
@@ -78,17 +81,17 @@ export default async function SearchPage({ params }: PageProps) {
       ) : (
         <div className="grid gap-6">
           {results.map((result: any) => (
-            <article key={result.url} className="bg-white p-6 rounded-lg shadow border border-gray-100 hover:shadow-md transition-shadow">
+            <article key={result.url} className="bg-white p-6 rounded-lg shadow border border-gray-100">
               <div className="flex justify-between items-start">
                 <div>
-                  {result.breadcrumbs && (
-                    <div className="text-sm text-gray-500 mb-1">
-                      {result.breadcrumbs}
-                    </div>
-                  )}
                   <h2 className="text-xl font-semibold mb-2">
-                    <Link href={result.url} className="text-primary hover:underline">
-                      {result.pageTitle}
+                    <Link href={result.url} className="text-blue-600 hover:underline">
+                      {result.title}
+                      {result.score >= 5 && (
+                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          Top Match
+                        </span>
+                      )}
                     </Link>
                   </h2>
                   {result.description && (

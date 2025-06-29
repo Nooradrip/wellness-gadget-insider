@@ -1,3 +1,4 @@
+// src/app/api/search/route.ts
 import { NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs/promises';
@@ -9,9 +10,9 @@ export async function GET(request: Request) {
   try {
     const filePath = path.join(process.cwd(), 'src', 'data', 'blog-articles.json');
     const fileContents = await fs.readFile(filePath, 'utf8');
-    const articles = JSON.parse(fileContents);
+    const data = JSON.parse(fileContents);
 
-    if (!Array.isArray(articles)) {
+    if (!Array.isArray(data)) {
       throw new Error('Invalid data format: expected an array of articles');
     }
 
@@ -19,11 +20,11 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    const results = articles.map((article) => {
+    const results = data.map((article) => {
       let score = 0;
       const searchContent = `${article.pageTitle} ${article.metaDescription || ''} ${article.description || ''}`.toLowerCase();
       
-      // Enhanced scoring logic
+      // Scoring logic
       if (article.pageTitle.toLowerCase().includes(query)) score += 5;
       if (article.metaDescription?.toLowerCase().includes(query)) score += 3;
       if (article.description?.toLowerCase().includes(query)) score += 2;
@@ -31,15 +32,14 @@ export async function GET(request: Request) {
 
       return {
         url: `/blog/${article.slug}`,
-        pageTitle: article.pageTitle,
+        title: article.pageTitle,
         description: article.metaDescription || article.description,
-        breadcrumbs: `${article.mainCategoryName} › ${article.subCategoryName}`,
         score
       };
     })
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
+    .slice(0, 10); // Limit to 10 best results
 
     return NextResponse.json(results);
     
