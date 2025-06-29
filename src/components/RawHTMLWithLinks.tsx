@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import Link from 'next/link';
 
 interface RawHTMLWithLinksProps {
   html: string;

@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 // Define base URL based on environment
 const baseUrl = process.env.NODE_ENV === 'development' 
   ? 'http://localhost:3000'
-  : '';
+  : 'https://www.petgadgetinsider.com';
 
 interface BlogArticle {
   isPreformatted: boolean;
@@ -42,19 +42,6 @@ export async function GET(request: Request) {
     
     console.log(`[Search API] Loaded ${articles.length} articles`);
 
-    // Detailed debug: Find articles with "cat" in any field
-    const catArticles = articles.filter(article => {
-      const title = article.pageTitle.toLowerCase();
-      const description = article.description.toLowerCase();
-      const content = article.htmlBody.toLowerCase();
-      return title.includes('cat') || description.includes('cat') || content.includes('cat');
-    });
-    
-    console.log(`[Search API] Found ${catArticles.length} articles containing "cat"`);
-    catArticles.forEach(article => {
-      console.log(`- "${article.pageTitle}"`);
-    });
-
     const queryTerms = query.split(/\s+/).filter(term => term.length > 0);
     console.log(`[Search API] Search terms:`, queryTerms);
 
@@ -63,14 +50,12 @@ export async function GET(request: Request) {
       const title = article.pageTitle.toLowerCase();
       const breadcrumbs = `${article.mainCategoryName} ${article.subCategoryName}`.toLowerCase();
       const description = article.description.toLowerCase();
-      
-      // Debug object to track scoring
-      const scoreDetails: string[] = [];
+      const metaDescription = article.metaDescription.toLowerCase();
+      const htmlBody = article.htmlBody.toLowerCase();
       
       // 1. Exact title match (highest priority)
       if (title.includes(query)) {
         score += 100;
-        scoreDetails.push(`Full query in title: +100`);
       }
       
       // 2. Individual term matches
@@ -78,29 +63,30 @@ export async function GET(request: Request) {
         // Title matches (high weight)
         if (title.includes(term)) {
           score += 10;
-          scoreDetails.push(`"${term}" in title: +10`);
         }
         
         // Breadcrumb matches (medium weight)
         if (breadcrumbs.includes(term)) {
           score += 5;
-          scoreDetails.push(`"${term}" in breadcrumbs: +5`);
         }
         
         // Description matches (low weight)
-        if (description.includes(term)) {
+        if (description.includes(term) || metaDescription.includes(term)) {
           score += 1;
-          scoreDetails.push(`"${term}" in description: +1`);
+        }
+        
+        // Content matches (lowest weight)
+        if (htmlBody.includes(term)) {
+          score += 0.5;
         }
       });
 
       return {
-        ...article,
-        score,
         url: `${baseUrl}/blog/${article.slug}`,
+        pageTitle: article.pageTitle,
+        description: article.metaDescription || article.description,
         breadcrumbs: `${article.mainCategoryName} > ${article.subCategoryName}`,
-        // Add debug information
-        _scoreDetails: scoreDetails
+        score: Math.round(score)
       };
     });
 
@@ -109,22 +95,7 @@ export async function GET(request: Request) {
       .filter(item => item.score > 0)
       .sort((a, b) => b.score - a.score);
 
-    // Detailed debug output
     console.log(`[Search API] Found ${results.length} results for "${query}"`);
-    if (results.length > 0) {
-      console.log(`[Search API] Scoring details for top result (${results[0].pageTitle}):`);
-      console.log(`- Score: ${results[0].score}`);
-      console.log(`- Breakdown:`, results[0]._scoreDetails);
-    }
-    
-    // Log all results with scores
-    console.log(`[Search API] All results with scores:`);
-    results.forEach(result => {
-      console.log(`- ${result.pageTitle}: ${result.score} points`);
-      if (result._scoreDetails.length > 0) {
-        console.log(`  Breakdown: ${result._scoreDetails.join(', ')}`);
-      }
-    });
     
     return new NextResponse(JSON.stringify(results), {
       status: 200,

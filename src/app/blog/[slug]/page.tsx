@@ -9,7 +9,7 @@ import type { Metadata, ResolvingMetadata } from "next";
 import { getKeywords } from "@/lib/seo-utils";
 import Link from "next/link";
 
-// Type assertion for blogData to ensure it matches BlogData interface
+// Type assertion for blogData
 const typedBlogData = blogData as {
   mainCategories: {
     slug: string;
@@ -58,29 +58,23 @@ const typedBlogData = blogData as {
   }[];
 };
 
-// FIXED: Removed incorrect Promise type from params
-interface PageProps {
-  params: { 
-    slug: string
-  };
-  searchParams?: Record<string, string | string[]>;
-}
-
 export async function generateStaticParams() {
   return typedBlogData.articles.map((article) => ({
     slug: article.slug,
   }));
 }
 
+// FIX: Updated the function signature to match Next.js's expected types
 export async function generateMetadata(
-  { params }: PageProps,
+  { params }: { params: Promise<{ slug: string }> },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const slug = params?.slug || '';
-  const slugParam = slug.trim().toLowerCase();
+  // Await the params to get the actual slug value
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug.trim().toLowerCase();
   
   const article = typedBlogData.articles.find(
-    (item) => item.slug.trim().toLowerCase() === slugParam
+    (item) => item.slug.trim().toLowerCase() === slug
   );
 
   if (!article) {
@@ -122,16 +116,20 @@ export async function generateMetadata(
   };
 }
 
-export default function BlogPostPage({ params }: PageProps) {
-  const slug = params?.slug || '';
-  const slugParam = slug.trim().toLowerCase();
+export default async function BlogPostPage({ 
+  params 
+}: { 
+  params: { slug: string } 
+}) {
+  const slug = params.slug.trim().toLowerCase(); // This line defines 'slug'
   
+  // Find the article using 'slug' (not 'slugParam')
   const article = typedBlogData.articles.find(
-    (item) => item.slug.trim().toLowerCase() === slugParam
+    (item) => item.slug.trim().toLowerCase() === slug // FIX: Changed slugParam to slug
   );
 
   if (!article) {
-    return notFound();
+    notFound();
   }
 
   const addAsteriskToTopPick = (html: string) => {
@@ -142,7 +140,6 @@ export default function BlogPostPage({ params }: PageProps) {
   };
 
   const parseInternalLinks = (html: string) => {
-    // Safe access to internalLinks with proper fallback
     const internalLinks = typedBlogData.internalLinks || [];
     const linkMap = new Map(
       internalLinks.map((link) => [link.id.toLowerCase(), link])
@@ -428,7 +425,7 @@ export default function BlogPostPage({ params }: PageProps) {
         <Breadcrumbs
           links={[
             { href: "/", text: "Home" },
-            { href: "/blog", text: "Pet Supplies Reviews" }, // Changed from "Blog"
+            { href: "/blog", text: "Pet Supplies Reviews" },
             {
               href: `/blog/category/${article.mainCategorySlug}`,
               text: article.mainCategoryName,

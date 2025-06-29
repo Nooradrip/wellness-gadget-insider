@@ -1,15 +1,29 @@
 // src/lib/blog.ts
+import blogArticles from '@/data/blog-articles.json';
+
 export interface BlogArticle {
-  title: string;
+  isPreformatted: boolean;
   slug: string;
-  description?: string;
+  mainCategorySlug: string;
+  mainCategoryName: string;
+  subCategorySlug: string;
+  subCategoryName: string;
+  pageTitle: string;
+  titleTag: string;
+  description: string;
+  metaDescription: string;
+  featuredImageUrl: string;
+  featuredImageAlt: string;
+  featuredImageHint: string;
+  authorName: string;
+  datePublished: string;
+  dateModified: string;
+  htmlBody: string;
 }
 
-export async function getAllBlogPosts(): Promise<BlogArticle[]> {
+export function getAllBlogPosts(): BlogArticle[] {
   try {
-    // Directly require the JSON file
-    const blogData = require('@/data/blog-articles.json');
-    return blogData.articles || [];
+    return blogArticles.articles || [];
   } catch (error) {
     console.error('Failed to load blog articles:', error);
     return [];

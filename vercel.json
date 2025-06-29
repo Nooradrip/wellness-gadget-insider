@@ -3,7 +3,7 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/next@14.2.4"
+      "use": "@vercel/next"
     }
   ],
   "build": {
@@ -12,7 +12,6 @@
       "NEXT_TELEMETRY_DISABLED": "1"
     }
   },
-  "installCommand": "npm ci --prefer-offline --legacy-peer-deps",
-  "framework": "nextjs",
-  "nodeVersion": "18.x"
+  "installCommand": "npm install --prefer-offline --legacy-peer-deps",
+  "framework": "nextjs"
 }

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Poppins } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Layout/Header'

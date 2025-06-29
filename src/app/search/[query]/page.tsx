@@ -50,7 +50,7 @@ export default async function SearchPage({ params }: PageProps) {
     // Use direct API path to avoid routing conflicts
     const apiUrl = `${process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
-      : ''}/api/search?q=${encodeURIComponent(normalizedQuery)}`;
+      : 'https://www.petgadgetinsider.com'}/api/search?q=${encodeURIComponent(normalizedQuery)}`;
     
     console.log(`[SearchPage] Calling API: ${apiUrl}`);
     
@@ -66,13 +66,6 @@ export default async function SearchPage({ params }: PageProps) {
     
     results = await response.json();
     console.log(`[SearchPage] Found ${results.length} results`);
-    if (results.length > 0) {
-      console.log('[SearchPage] First result:', {
-        title: results[0].pageTitle,
-        score: results[0].score,
-        url: results[0].url
-      });
-    }
   } catch (error) {
     console.error('Search failed:', error);
     // Fallback to empty results on error

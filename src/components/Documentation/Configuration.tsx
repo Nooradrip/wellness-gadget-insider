@@ -1,4 +1,4 @@
-import { ColorConfiguration } from './ColorConfiguraion'
+import { ColorConfiguration } from './ColorConfiguration'  // Fixed typo here (added 't')
 import { LogoConfiguration } from './LogoConfiguration'
 import { TypographyConfiguration } from './TypographyConfiguration'
 

@@ -1,3 +1,5 @@
+/* eslint-env jest */
+
 import { render, screen } from '@testing-library/react'
 import BlogPostPage from './page'
 import '@testing-library/jest-dom'
