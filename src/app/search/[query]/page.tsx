@@ -1,7 +1,5 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { getAllBlogPosts } from '@/lib/blog';
-import Fuse from 'fuse.js';
 
 type PageProps = {
   params: { query: string | string[] };
@@ -34,7 +32,7 @@ export async function generateMetadata({
   };
 }
 
-export default function SearchPage({ params }: PageProps) {
+export default async function SearchPage({ params }: PageProps) {
   const query = Array.isArray(params.query) 
     ? params.query[0] 
     : params.query || "";
@@ -43,28 +41,40 @@ export default function SearchPage({ params }: PageProps) {
   // Normalize query for case-insensitive search
   const normalizedQuery = decodedQuery.toLowerCase();
   
-  // Get all blog posts
-  const articles = getAllBlogPosts();
+  // DEBUG: Log the query we're searching for
+  console.log(`[SearchPage] Searching for: "${normalizedQuery}"`);
   
-  // Configure search
-  const fuseOptions = {
-    keys: ['pageTitle', 'description', 'metaDescription', 'mainCategoryName', 'subCategoryName'],
-    threshold: 0.4,
-    minMatchCharLength: 2,
-    includeScore: true
-  };
-  
-  const fuse = new Fuse(articles, fuseOptions);
-  const searchResults = normalizedQuery ? fuse.search(normalizedQuery) : [];
-  
-  // Map to expected results format
-  const results = searchResults.map(({ item, score }) => ({
-    url: `/blog/${item.slug}`,
-    pageTitle: item.pageTitle,
-    description: item.metaDescription || item.description,
-    breadcrumbs: `${item.mainCategoryName} > ${item.subCategoryName}`,
-    score: Math.round((1 - (score || 0)) * 100)
-  }));
+  // Safely fetch search results
+  let results = [];
+  try {
+    // FIX: Use relative API path to avoid domain issues
+    const apiUrl = `/api/search?q=${encodeURIComponent(normalizedQuery)}`;
+    
+    console.log(`[SearchPage] Calling API: ${apiUrl}`);
+    
+    const response = await fetch(apiUrl, {
+      next: { revalidate: 3600 },
+      cache: 'no-store' // Bypass cache to get fresh results
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Search API failed with status ${response.status}: ${errorText}`);
+    }
+    
+    results = await response.json();
+    console.log(`[SearchPage] Found ${results.length} results`);
+    if (results.length > 0) {
+      console.log('[SearchPage] First result:', {
+        title: results[0].pageTitle,
+        score: results[0].score,
+        url: results[0].url
+      });
+    }
+  } catch (error) {
+    console.error('Search failed:', error);
+    // Fallback to empty results on error
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -88,7 +98,7 @@ export default function SearchPage({ params }: PageProps) {
         </div>
       ) : (
         <div className="grid gap-6">
-          {results.map((result) => (
+          {results.map((result: any) => (
             <article key={result.url} className="bg-white p-6 rounded-lg shadow border border-gray-100">
               <div className="flex justify-between items-start">
                 <div>
