@@ -1,45 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export default function SearchResults({ query }: { query: string }) {
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        if (!query.trim()) {
-          setResults([]);
-          setLoading(false);
-          return;
-        }
-
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-        
-        const data = await res.json();
-        setResults(data);
-      } catch (err) {
-        console.error('Search error:', err);
-        setError('Failed to load search results. Please try again.');
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResults();
-  }, [query]);
-
+export default function SearchResults({ 
+  query, 
+  results,
+  loading,
+  error
+}: { 
+  query: string;
+  results: any[];
+  loading: boolean;
+  error: string | null;
+}) {
   if (loading) {
     return (
       <div className="p-8 text-center">

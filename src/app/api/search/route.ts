@@ -23,7 +23,6 @@ export async function GET(request: Request) {
       let score = 0;
       const searchContent = `${article.pageTitle} ${article.metaDescription || ''} ${article.description || ''}`.toLowerCase();
       
-      // Scoring logic
       if (article.pageTitle.toLowerCase().includes(query)) score += 5;
       if (article.metaDescription?.toLowerCase().includes(query)) score += 3;
       if (article.description?.toLowerCase().includes(query)) score += 2;

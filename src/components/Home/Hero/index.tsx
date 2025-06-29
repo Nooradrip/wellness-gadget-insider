@@ -27,7 +27,7 @@ const Hero = () => {
                 Pet Supplies Review Blog
               </Link>
               <Link
-                href='/about-us'
+                href='/about'
                 className='flex border w-full md:w-auto mt-2 border-primary justify-center rounded-full text-lg font-medium items-center py-2 px-5 text-primary hover:text-white hover:bg-primary'>
                 About Us
               </Link>

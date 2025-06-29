@@ -1,5 +1,8 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import SearchResults from '@/components/SearchResults';
+import path from 'path';
+import fs from 'fs/promises';
 
 type PageProps = {
   params: { query: string | string[] };
@@ -32,6 +35,48 @@ export async function generateMetadata({
   };
 }
 
+async function searchArticles(query: string) {
+  try {
+    const filePath = path.join(process.cwd(), 'src', 'data', 'blog-articles.json');
+    const fileContents = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(fileContents);
+
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid data format: expected an array of articles');
+    }
+
+    if (!query.trim()) {
+      return [];
+    }
+
+    const normalizedQuery = query.toLowerCase();
+    return data.map((article) => {
+      let score = 0;
+      const searchContent = `${article.pageTitle} ${article.metaDescription || ''} ${article.description || ''}`.toLowerCase();
+      
+      if (article.pageTitle.toLowerCase().includes(normalizedQuery)) score += 5;
+      if (article.metaDescription?.toLowerCase().includes(normalizedQuery)) score += 3;
+      if (article.description?.toLowerCase().includes(normalizedQuery)) score += 2;
+      if (searchContent.includes(normalizedQuery)) score += 1;
+
+      return {
+        url: `/blog/${article.slug}`,
+        title: article.pageTitle,
+        description: article.metaDescription || article.description,
+        breadcrumbs: article.breadcrumbs || '',
+        score
+      };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+    
+  } catch (error: any) {
+    console.error('Search error:', error.message);
+    throw new Error("Search failed");
+  }
+}
+
 export default async function SearchPage({ params }: PageProps) {
   const query = Array.isArray(params.query) 
     ? params.query[0] 
@@ -40,79 +85,22 @@ export default async function SearchPage({ params }: PageProps) {
   const normalizedQuery = decodedQuery.toLowerCase();
   
   let results = [];
+  let loading = false;
+  let error: string | null = null;
+
   try {
-    const apiUrl = `/api/search?q=${encodeURIComponent(normalizedQuery)}`;
-    
-    const response = await fetch(apiUrl, {
-      next: { revalidate: 3600 },
-      cache: 'no-store'
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Search API failed with status ${response.status}: ${errorText}`);
-    }
-    
-    results = await response.json();
-  } catch (error) {
-    console.error('Search failed:', error);
+    results = await searchArticles(normalizedQuery);
+  } catch (err) {
+    console.error('Search failed:', err);
+    error = 'Failed to load search results. Please try again.';
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">
-        Results for: <span className="text-blue-600">"{decodedQuery}"</span>
-        {results.length > 0 && (
-          <span className="text-sm font-normal text-gray-500 ml-2">
-            ({results.length} matches)
-          </span>
-        )}
-      </h1>
-
-      {results.length === 0 ? (
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-          <p>No results found for "{decodedQuery}". Try different keywords.</p>
-          <div className="mt-4">
-            <Link href="/blog" className="text-blue-600 hover:underline">
-              Browse all articles
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="grid gap-6">
-          {results.map((result: any) => (
-            <article key={result.url} className="bg-white p-6 rounded-lg shadow border border-gray-100">
-              <div className="flex justify-between items-start">
-                <div>
-                  {result.breadcrumbs && (
-                    <div className="text-sm text-gray-500 mb-1">
-                      {result.breadcrumbs}
-                    </div>
-                  )}
-                  <h2 className="text-xl font-semibold mb-2">
-                    <Link href={result.url} className="text-blue-600 hover:underline">
-                      {result.title}
-                      {result.score >= 5 && (
-                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                          Top Match
-                        </span>
-                      )}
-                    </Link>
-                  </h2>
-                  {result.description && (
-                    <p className="text-gray-600 mb-2">{result.description}</p>
-                  )}
-                </div>
-                {process.env.NODE_ENV === 'development' && (
-                  <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
-                    Score: {result.score}
-                  </span>
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-    </div>
+    <SearchResults 
+      query={decodedQuery} 
+      results={results} 
+      loading={loading}
+      error={error}
+    />
   );
 }
