@@ -7,7 +7,20 @@ export async function GET(request: Request) {
   const query = searchParams.get('q')?.toLowerCase() || '';
   
   try {
+    // Use relative path that works in Vercel
     const filePath = path.join(process.cwd(), 'src', 'data', 'blog-articles.json');
+    
+    // Check if file exists
+    try {
+      await fs.access(filePath);
+    } catch (err) {
+      console.error('File not found:', filePath);
+      return NextResponse.json(
+        { error: "Search data not found" },
+        { status: 404 }
+      );
+    }
+    
     const fileContents = await fs.readFile(filePath, 'utf8');
     const data = JSON.parse(fileContents);
 
@@ -23,6 +36,7 @@ export async function GET(request: Request) {
       let score = 0;
       const searchContent = `${article.pageTitle} ${article.metaDescription || ''} ${article.description || ''}`.toLowerCase();
       
+      // Case-insensitive matching
       if (article.pageTitle.toLowerCase().includes(query)) score += 5;
       if (article.metaDescription?.toLowerCase().includes(query)) score += 3;
       if (article.description?.toLowerCase().includes(query)) score += 2;
