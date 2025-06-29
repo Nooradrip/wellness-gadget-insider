@@ -15,14 +15,7 @@ export default function SearchBar() {
     const trimmedQuery = query.trim();
     if (trimmedQuery) {
       setIsLoading(true);
-      try {
-        // Use URL-friendly format without additional transformations
-        router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
-      } catch (error) {
-        console.error("Navigation error:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      router.push(`/search/${encodeURIComponent(trimmedQuery)}`);
     }
   };
 
@@ -32,7 +25,7 @@ export default function SearchBar() {
         <input
           type="text"
           placeholder="Search pet products..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           disabled={isLoading}
@@ -44,11 +37,11 @@ export default function SearchBar() {
           aria-label="Search"
         >
           {isLoading ? (
-            <span className="loading-spinner h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent animate-spin" />
+            <span className="loading-spinner h-5 w-5 border-2 border-primary rounded-full border-t-transparent animate-spin" />
           ) : (
             <Icon 
               icon="heroicons:magnifying-glass" 
-              className="h-5 w-5 text-gray-400 hover:text-blue-500" 
+              className="h-5 w-5 text-gray-400 hover:text-primary" 
             />
           )}
         </button>
