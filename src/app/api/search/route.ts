@@ -7,16 +7,16 @@ export async function GET(request: Request) {
   const query = searchParams.get('q')?.toLowerCase() || '';
   
   try {
-    // Use relative path that works in Vercel
+    // FIXED: Use absolute path that works on Vercel
     const filePath = path.join(process.cwd(), 'src', 'data', 'blog-articles.json');
     
-    // Check if file exists
+    // Verify file exists
     try {
       await fs.access(filePath);
     } catch (err) {
       console.error('File not found:', filePath);
       return NextResponse.json(
-        { error: "Search data not found" },
+        { error: "Search data not found", path: filePath },
         { status: 404 }
       );
     }
@@ -38,8 +38,8 @@ export async function GET(request: Request) {
       
       // Case-insensitive matching
       if (article.pageTitle.toLowerCase().includes(query)) score += 5;
-      if (article.metaDescription?.toLowerCase().includes(query)) score += 3;
-      if (article.description?.toLowerCase().includes(query)) score += 2;
+      if (article.metaDescription?.toLowerCase()?.includes(query)) score += 3;
+      if (article.description?.toLowerCase()?.includes(query)) score += 2;
       if (searchContent.includes(query)) score += 1;
 
       return {
@@ -59,7 +59,11 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error('Search error:', error.message);
     return NextResponse.json(
-      { error: "Search failed", details: error.message },
+      { 
+        error: "Search failed", 
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
