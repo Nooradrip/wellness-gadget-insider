@@ -8,11 +8,11 @@ export async function GET(request: Request) {
   const query = searchParams.get('q')?.toLowerCase().trim() || '';
   
   try {
-    // 1. Verify file path (UNCHANGED)
+    // 1. Verify file path
     const filePath = path.join(process.cwd(), 'src', 'data', 'blog-articles.json');
     console.log(`Search API: Loading data from ${filePath}`);
     
-    // 2. Check file exists (UNCHANGED)
+    // 2. Check file exists
     try {
       await fs.access(filePath);
       console.log('Search API: File exists');
@@ -24,11 +24,11 @@ export async function GET(request: Request) {
       );
     }
     
-    // 3. Read file (UNCHANGED)
+    // 3. Read file
     const fileContents = await fs.readFile(filePath, 'utf8');
     console.log(`Search API: File read successfully (${fileContents.length} bytes)`);
     
-    // 4. Parse JSON (UNCHANGED)
+    // 4. Parse JSON
     let rawData;
     try {
       rawData = JSON.parse(fileContents);
@@ -41,25 +41,40 @@ export async function GET(request: Request) {
       );
     }
     
-    // 5. Extract articles from categories (MINIMAL CHANGE)
+    // 5. Extract articles from categories - FIXED LOGIC
     let allArticles: any[] = [];
     let totalArticles = 0;
 
-    // Preserve existing structure detection
-    if (rawData.mainCategories) {
+    // Handle category-based structure
+    if (rawData.mainCategories && Array.isArray(rawData.mainCategories)) {
       console.log(`Search API: Found ${rawData.mainCategories.length} categories`);
       
-      // Flatten articles from all categories
+      // NEW: Properly extract articles from each category
       rawData.mainCategories.forEach((category: any) => {
-        if (category.articles) {
-          allArticles = [...allArticles, ...category.articles];
-          totalArticles += category.articles.length;
+        // Check for both possible locations of articles
+        const articlesInCategory = 
+          category.articles || // Most likely location
+          category.data?.articles; // Alternative location
+        
+        if (articlesInCategory && Array.isArray(articlesInCategory)) {
+          allArticles = [...allArticles, ...articlesInCategory];
+          totalArticles += articlesInCategory.length;
+          console.log(`Search API: Added ${articlesInCategory.length} articles from category "${category.name}"`);
+        } else {
+          console.warn(`Search API: No articles found in category "${category.name}"`);
         }
       });
-    } else {
-      // Fallback to original handling
-      allArticles = Array.isArray(rawData) ? rawData : [rawData];
-      totalArticles = allArticles.length;
+    }
+    
+    // Fallback: Try to find articles at top level
+    if (totalArticles === 0) {
+      if (rawData.articles && Array.isArray(rawData.articles)) {
+        allArticles = rawData.articles;
+        totalArticles = rawData.articles.length;
+        console.log(`Search API: Using top-level articles array (${totalArticles} articles)`);
+      } else {
+        console.warn('Search API: No articles found in any category or top-level');
+      }
     }
 
     console.log(`Search API: Processing ${totalArticles} articles`);
@@ -71,7 +86,7 @@ export async function GET(request: Request) {
 
     console.log(`Search API: Searching for "${query}"`);
     
-    // 6. Perform search (UNCHANGED)
+    // 6. Perform search
     const results = allArticles
       .filter(article => {
         if (!article?.slug) {
@@ -81,7 +96,7 @@ export async function GET(request: Request) {
         return true;
       })
       .map(article => {
-        const title = (article.pageTitle || '').toLowerCase();
+        const title = (article.pageTitle || article.title || '').toLowerCase();
         const metaDesc = (article.metaDescription || '').toLowerCase();
         const description = (article.description || '').toLowerCase();
         const allText = `${title} ${metaDesc} ${description}`;
@@ -99,9 +114,9 @@ export async function GET(request: Request) {
         
         return {
           url: `/blog/${article.slug}`,
-          title: article.pageTitle,
+          title: article.pageTitle || article.title,
           description: article.metaDescription || article.description,
-          breadcrumbs: article.mainCategoryName || '',
+          breadcrumbs: article.mainCategoryName || article.mainCategory || '',
           score
         };
       })
