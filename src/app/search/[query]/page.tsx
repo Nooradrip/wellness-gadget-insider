@@ -31,27 +31,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function SearchPage({ params }: PageProps) {
+export default function SearchPage({ params }: PageProps) {
   const query = Array.isArray(params.query) 
     ? params.query[0] 
     : params.query || "";
-  const decodedQuery = decodeURIComponent(query);
-
-  // Server-side fetch for initial results
-  let initialResults = [];
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/search?q=${encodeURIComponent(decodedQuery)}`);
-    if (res.ok) {
-      initialResults = await res.json();
-    }
-  } catch (error) {
-    console.error('Initial search fetch failed:', error);
-  }
-
-  return (
-    <SearchResults 
-      query={decodedQuery}
-      initialResults={initialResults}
-    />
-  );
+  
+  return <SearchResults query={decodeURIComponent(query)} />;
 }
