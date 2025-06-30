@@ -40,11 +40,6 @@
     scroll-margin-top: 5rem;
   }
   
-  /* FIX FOR EMPTY P TAGS CAUSING SPACING ISSUES */
-  p:empty {
-    display: none !important;
-  }
-  
   /* ARTICLE CONTENT STYLING */
   .prose > div > * {
     margin-top: 1rem !important;
@@ -340,23 +335,23 @@
 }
 
 /* ==================== */
-/* CRITICAL FIXES */
+/* CRITICAL FIXES (MUST BE AT THE END) */
 /* ==================== */
 /* Fix for orange box */
-.prose .bg-primary\/10 {
+section.bg-primary\/10 {
   background-color: rgba(255, 172, 28, 0.1) !important;
 }
 
-.prose .text-primary {
+.text-primary {
   color: #FFAC1C !important;
 }
 
 /* Fix for dark mode orange box */
-.dark .prose .bg-primary\/10 {
+.dark section.bg-primary\/10 {
   background-color: rgba(229, 148, 25, 0.1) !important;
 }
 
-.dark .prose .text-primary {
+.dark .text-primary {
   color: #E59419 !important;
 }
 
@@ -383,9 +378,21 @@
 }
 
 /* Fix for empty paragraph spacing */
-.prose p:empty {
+p:empty {
   display: none !important;
   height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* Remove extra margin from sections */
+.my-0 {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Fix for article container spacing */
+.prose > div {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
 }
