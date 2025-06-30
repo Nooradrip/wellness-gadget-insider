@@ -85,7 +85,7 @@ export async function GET(request: Request) {
 
     console.log(`Search API: Searching for "${query}"`);
     
-    // 6. Enhanced scoring system
+    // 6. Enhanced scoring system with guaranteed perfect matches
     const results = allArticles
       .filter(article => {
         if (!article?.slug) {
@@ -99,45 +99,54 @@ export async function GET(request: Request) {
         const metaDesc = (article.metaDescription || '').toLowerCase();
         const description = (article.description || '').toLowerCase();
         
-        // Initialize scoring
+        // Initialize scoring (0-100)
         let score = 0;
         
-        // 1. Exact matches get highest priority
-        if (title === query) score += 10;
-        if (metaDesc === query) score += 8;
-        if (description === query) score += 6;
-        
-        // 2. Field-specific partial matches
-        if (title.includes(query)) {
-          score += 6;
+        // 1. Title matches (heaviest weight)
+        if (title === query) {
+          // Perfect match in title = instant 100%
+          score = 100;
+        } else if (title.includes(query)) {
+          score += 60;
           // Boost if match is near beginning
-          if (title.indexOf(query) < 20) score += 2;
+          if (title.indexOf(query) < 15) score += 10;
         }
         
-        if (metaDesc.includes(query)) {
-          score += 4;
+        // 2. Meta description matches
+        if (metaDesc === query) {
+          // Perfect meta match = max 90% unless already perfect
+          score = Math.max(score, 90);
+        } else if (metaDesc.includes(query)) {
+          score += 30;
           // Boost for exact phrase match
-          if (metaDesc.includes(` ${query} `)) score += 2;
+          if (metaDesc.includes(` ${query} `)) score += 10;
         }
         
+        // 3. Description matches
         if (description.includes(query)) {
-          score += 2;
+          score += 20;
           // Boost for multiple occurrences
           const count = (description.match(new RegExp(query, 'g')) || []).length;
-          if (count > 1) score += count;
+          if (count > 1) score += Math.min(10, count * 2);
         }
         
-        // 3. Category boosts
+        // 4. Category matches
         if (article.mainCategoryName?.toLowerCase().includes(query)) {
-          score += 3;
+          score += 15;
         }
         
-        // 4. Freshness boost (if articles have dates)
+        // 5. Freshness boost
         if (article.publishedDate) {
           const pubDate = new Date(article.publishedDate);
           const ageInMonths = (Date.now() - pubDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
-          if (ageInMonths < 6) score += 3; // Recent articles
+          if (ageInMonths < 3) score += 15; // Very recent articles
         }
+        
+        // Ensure score is between 10-100 with perfect matches possible
+        score = Math.min(100, Math.max(10, score));
+        
+        // Guarantee perfect score for exact title matches
+        if (title === query) score = 100;
         
         return {
           url: `/blog/${article.slug}`,
@@ -153,7 +162,6 @@ export async function GET(request: Request) {
 
     console.log(`Search API: Found ${results.length} matches`);
     
-    // Return results with scores
     return NextResponse.json(results);
     
   } catch (error) {
