@@ -40,6 +40,23 @@
     scroll-margin-top: 5rem;
   }
   
+  /* ORANGE BOX STYLING FOR ALL BLOG ARTICLES */
+  .prose .bg-primary\/10 {
+    background-color: rgba(255, 172, 28, 0.1) !important; /* Light orange background */
+  }
+  
+  .prose .text-primary {
+    color: #FFAC1C !important; /* Orange text */
+  }
+  
+  .dark .prose .bg-primary\/10 {
+    background-color: rgba(229, 148, 25, 0.1) !important; /* Dark mode light orange */
+  }
+  
+  .dark .prose .text-primary {
+    color: #E59419 !important; /* Dark mode orange text */
+  }
+  
   /* ARTICLE CONTENT STYLING */
   .prose > div > * {
     margin-top: 1rem !important;
