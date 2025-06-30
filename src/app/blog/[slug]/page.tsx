@@ -3,7 +3,6 @@ import Image from "next/image";
 import Script from "next/script";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import blogData from "@/data/blog-articles.json";
-// @ts-ignore: Could not find a declaration file for module 'sanitize-html'
 import sanitizeHtml from 'sanitize-html';
 import type { Metadata, ResolvingMetadata } from "next";
 import { getKeywords } from "@/lib/seo-utils";
@@ -64,12 +63,10 @@ export async function generateStaticParams() {
   }));
 }
 
-// FIX: Updated the function signature to match Next.js's expected types
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  // Await the params to get the actual slug value
   const resolvedParams = await params;
   const slug = resolvedParams.slug.trim().toLowerCase();
   
@@ -121,17 +118,22 @@ export default async function BlogPostPage({
 }: { 
   params: { slug: string } 
 }) {
-  const slug = params.slug.trim().toLowerCase(); // This line defines 'slug'
+  const slug = params.slug.trim().toLowerCase();
   
-  // Find the article using 'slug' (not 'slugParam')
   const article = typedBlogData.articles.find(
-    (item) => item.slug.trim().toLowerCase() === slug // FIX: Changed slugParam to slug
+    (item) => item.slug.trim().toLowerCase() === slug
   );
 
   if (!article) {
     notFound();
   }
 
+  // 1. FIX: Clean empty paragraphs from content
+  const cleanEmptyParagraphs = (html: string) => {
+    return html.replace(/<p>\s*<\/p>/g, '');
+  };
+
+  // 2. FIX: Add asterisk to Top Pick
   const addAsteriskToTopPick = (html: string) => {
     return html.replace(
       /(Pet Gadget Insider's Top Pick)/g, 
@@ -139,6 +141,7 @@ export default async function BlogPostPage({
     );
   };
 
+  // 3. FIX: Parse internal links
   const parseInternalLinks = (html: string) => {
     const internalLinks = typedBlogData.internalLinks || [];
     const linkMap = new Map(
@@ -166,11 +169,28 @@ export default async function BlogPostPage({
         ? article.htmlBody
         : parseInternalLinks(article.htmlBody);
       
+      // 4. FIX: Clean empty paragraphs first
+      processedHtml = cleanEmptyParagraphs(processedHtml);
+      
+      // 5. FIX: Add asterisk after cleaning
       processedHtml = addAsteriskToTopPick(processedHtml);
       
+      // 6. FIX: Add proper classes to headings
       processedHtml = processedHtml.replace(
         /<h2>/g, 
-        '<h2 class="font-bold text-2xl mb-4 mt-8">'
+        '<h2 class="font-bold text-2xl mb-4 mt-8 text-primary">'
+      );
+      
+      // 7. FIX: Ensure primary text classes are applied
+      processedHtml = processedHtml.replace(
+        /class="text-primary"/g, 
+        'class="text-primary"'
+      );
+      
+      // 8. FIX: Ensure background classes are applied
+      processedHtml = processedHtml.replace(
+        /class="bg-primary\/10"/g, 
+        'class="bg-primary/10"'
       );
       
       const sanitizedHtml = sanitizeHtml(processedHtml, {
@@ -441,7 +461,9 @@ export default async function BlogPostPage({
         />
 
         <header className="mb-6 md:mb-8">
-          <h1 className="!text-4xl !md:text-5xl font-bold mb-3 md:mb-4">{article.pageTitle}</h1>
+          <h1 className="!text-4xl !md:text-5xl font-bold mb-3 md:mb-4 text-primary">
+            {article.pageTitle}
+          </h1>
           <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 gap-2 sm:gap-4 mb-3 md:mb-4">
             <span>
               Published: {new Date(article.datePublished).toLocaleDateString()}
@@ -466,12 +488,13 @@ export default async function BlogPostPage({
           />
         </div>
 
-        <article className="max-w-none">
+        {/* 9. FIX: Wrap content in prose container */}
+        <div className="prose max-w-none">
           <div className="mb-4 md:mb-6 text-base md:text-lg text-gray-700 dark:text-gray-300">
             {article.description}
           </div>
           {renderArticleContent()}
-        </article>
+        </div>
 
         {article.amazon_link && (
           <div className="mt-6 md:mt-8 text-center">

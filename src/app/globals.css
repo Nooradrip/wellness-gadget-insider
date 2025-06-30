@@ -338,7 +338,7 @@
 /* CRITICAL FIXES (MUST BE AT THE END) */
 /* ==================== */
 /* Fix for orange box */
-section.bg-primary\/10 {
+.bg-primary\/10 {
   background-color: rgba(255, 172, 28, 0.1) !important;
 }
 
@@ -347,7 +347,7 @@ section.bg-primary\/10 {
 }
 
 /* Fix for dark mode orange box */
-.dark section.bg-primary\/10 {
+.dark .bg-primary\/10 {
   background-color: rgba(229, 148, 25, 0.1) !important;
 }
 
@@ -366,15 +366,6 @@ section.bg-primary\/10 {
 .dark .prose h2,
 .dark .prose h3 {
   color: #E59419 !important;
-}
-
-/* Fix for spacing issues */
-.prose > div > *:first-child {
-  margin-top: 0 !important;
-}
-
-.prose > div > *:last-child {
-  margin-bottom: 0 !important;
 }
 
 /* Fix for empty paragraph spacing */
