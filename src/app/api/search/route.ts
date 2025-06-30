@@ -1,146 +1,166 @@
-'use client';
+// src/app/api/search/route.ts
+import { NextResponse } from 'next/server';
+import path from 'path';
+import fs from 'fs/promises';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get('q')?.toLowerCase().trim() || '';
+  
+  try {
+    // 1. Verify file path
+    const filePath = path.join(process.cwd(), 'src', 'data', 'blog-articles.json');
+    console.log(`Search API: Loading data from ${filePath}`);
+    
+    // 2. Check file exists
+    try {
+      await fs.access(filePath);
+      console.log('Search API: File exists');
+    } catch (err) {
+      console.error('Search API: File not found', err);
+      return NextResponse.json(
+        { error: "Data file not found", path: filePath },
+        { status: 404 }
+      );
+    }
+    
+    // 3. Read file
+    const fileContents = await fs.readFile(filePath, 'utf8');
+    console.log(`Search API: File read successfully (${fileContents.length} bytes)`);
+    
+    // 4. Parse JSON
+    let rawData;
+    try {
+      rawData = JSON.parse(fileContents);
+      console.log('Search API: JSON parsed successfully');
+    } catch (parseError) {
+      console.error('Search API: JSON parse error', parseError);
+      return NextResponse.json(
+        { error: "Invalid JSON format", message: parseError.message },
+        { status: 500 }
+      );
+    }
+    
+    // 5. Extract articles from categories
+    let allArticles: any[] = [];
+    let totalArticles = 0;
 
-export default function SearchResults({ query }: { query: string }) {
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    // Handle category-based structure
+    if (rawData.mainCategories && Array.isArray(rawData.mainCategories)) {
+      console.log(`Search API: Found ${rawData.mainCategories.length} categories`);
+      
+      // Properly extract articles from each category
+      rawData.mainCategories.forEach((category: any) => {
+        const articlesInCategory = 
+          category.articles || 
+          category.data?.articles;
         
-        if (!query.trim()) {
-          setResults([]);
-          setLoading(false);
-          return;
+        if (articlesInCategory && Array.isArray(articlesInCategory)) {
+          allArticles = [...allArticles, ...articlesInCategory];
+          totalArticles += articlesInCategory.length;
+          console.log(`Search API: Added ${articlesInCategory.length} articles from category "${category.name}"`);
+        } else {
+          console.warn(`Search API: No articles found in category "${category.name}"`);
         }
-
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-        
-        const data = await res.json();
-        setResults(data);
-      } catch (err) {
-        console.error('Search error:', err);
-        setError('Failed to load search results. Please try again.');
-        setResults([]);
-      } finally {
-        setLoading(false);
+      });
+    }
+    
+    // Fallback: Try to find articles at top level
+    if (totalArticles === 0) {
+      if (rawData.articles && Array.isArray(rawData.articles)) {
+        allArticles = rawData.articles;
+        totalArticles = rawData.articles.length;
+        console.log(`Search API: Using top-level articles array (${totalArticles} articles)`);
+      } else {
+        console.warn('Search API: No articles found in any category or top-level');
       }
-    };
+    }
 
-    fetchResults();
-  }, [query]);
+    console.log(`Search API: Processing ${totalArticles} articles`);
+    
+    if (!query) {
+      console.log('Search API: Empty query - returning empty results');
+      return NextResponse.json([]);
+    }
 
-  if (loading) {
-    return (
-      <div className="p-8 text-center">
-        <div className="inline-block h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-2">Searching for "{query}"...</p>
-      </div>
+    console.log(`Search API: Searching for "${query}"`);
+    
+    // 6. Enhanced scoring system
+    const results = allArticles
+      .filter(article => {
+        if (!article?.slug) {
+          console.warn('Search API: Article missing slug', article);
+          return false;
+        }
+        return true;
+      })
+      .map(article => {
+        const title = (article.pageTitle || article.title || '').toLowerCase();
+        const metaDesc = (article.metaDescription || '').toLowerCase();
+        const description = (article.description || '').toLowerCase();
+        
+        // Initialize scoring
+        let score = 0;
+        
+        // 1. Exact matches get highest priority
+        if (title === query) score += 10;
+        if (metaDesc === query) score += 8;
+        if (description === query) score += 6;
+        
+        // 2. Field-specific partial matches
+        if (title.includes(query)) {
+          score += 6;
+          // Boost if match is near beginning
+          if (title.indexOf(query) < 20) score += 2;
+        }
+        
+        if (metaDesc.includes(query)) {
+          score += 4;
+          // Boost for exact phrase match
+          if (metaDesc.includes(` ${query} `)) score += 2;
+        }
+        
+        if (description.includes(query)) {
+          score += 2;
+          // Boost for multiple occurrences
+          const count = (description.match(new RegExp(query, 'g')) || []).length;
+          if (count > 1) score += count;
+        }
+        
+        // 3. Category boosts
+        if (article.mainCategoryName?.toLowerCase().includes(query)) {
+          score += 3;
+        }
+        
+        // 4. Freshness boost (if articles have dates)
+        if (article.publishedDate) {
+          const pubDate = new Date(article.publishedDate);
+          const ageInMonths = (Date.now() - pubDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+          if (ageInMonths < 6) score += 3; // Recent articles
+        }
+        
+        return {
+          url: `/blog/${article.slug}`,
+          title: article.pageTitle || article.title,
+          description: article.metaDescription || article.description,
+          breadcrumbs: article.mainCategoryName || article.mainCategory || '',
+          score
+        };
+      })
+      .filter(item => item.score > 0)
+      // Sort by score descending
+      .sort((a, b) => b.score - a.score);
+
+    console.log(`Search API: Found ${results.length} matches`);
+    
+    // Return results with scores
+    return NextResponse.json(results);
+    
+  } catch (error) {
+    console.error('Search API: Unexpected error', error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
     );
   }
-
-  if (error) {
-    return (
-      <div className="p-8 text-center text-red-500">
-        {error}
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">
-        Search Results for: <span className="text-primary">"{query}"</span>
-      </h1>
-
-      {results.length > 0 ? (
-        <div className="space-y-6">
-          {results.map((result) => (
-            <div key={result.url} className="p-6 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start">
-                <div>
-                  {result.breadcrumbs && (
-                    <div className="text-sm text-gray-500 mb-1">
-                      {result.breadcrumbs}
-                    </div>
-                  )}
-                  <Link href={result.url} className="block">
-                    <h2 className="text-xl font-semibold text-primary hover:underline">
-                      {result.title}
-                    </h2>
-                  </Link>
-                </div>
-                
-                {/* Score display with visual indicator */}
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center mb-1">
-                    <span className="text-sm font-medium text-gray-700 mr-2">
-                      Relevance:
-                    </span>
-                    <div className="relative w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="absolute top-0 left-0 h-full bg-green-500"
-                        style={{ width: `${Math.min(100, result.score * 5)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-sm font-semibold text-gray-900">
-                      {result.score.toFixed(1)} points
-                    </span>
-                    {result.score >= 8 && (
-                      <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                        Top Match
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {result.description && (
-                <p className="text-gray-600 mt-2">{result.description}</p>
-              )}
-              
-              {/* Score breakdown tooltip */}
-              <div className="mt-3 text-xs text-gray-500">
-                <details className="inline-block">
-                  <summary className="cursor-pointer text-blue-600 hover:underline">
-                    How is this score calculated?
-                  </summary>
-                  <div className="mt-1 p-2 bg-gray-50 rounded-md">
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>Title match: <span className="font-medium">6 points</span></li>
-                      <li>Meta description match: <span className="font-medium">4 points</span></li>
-                      <li>Content match: <span className="font-medium">2 points</span></li>
-                      <li>Recent article: <span className="font-medium">+3 bonus</span></li>
-                      <li>Category match: <span className="font-medium">+3 bonus</span></li>
-                    </ul>
-                  </div>
-                </details>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-          <p>No results found for "{query}". Try different keywords.</p>
-          <div className="mt-4">
-            <Link href="/blog" className="text-blue-600 hover:underline">
-              Browse all articles
-            </Link>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
