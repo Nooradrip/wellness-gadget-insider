@@ -40,6 +40,11 @@
     scroll-margin-top: 5rem;
   }
   
+  /* FIX FOR EMPTY P TAGS CAUSING SPACING ISSUES */
+  p:empty {
+    display: none !important;
+  }
+  
   /* ARTICLE CONTENT STYLING */
   .prose > div > * {
     margin-top: 1rem !important;
@@ -335,21 +340,52 @@
 }
 
 /* ==================== */
-/* ORANGE BOX FIX (HIGH SPECIFICITY) */
+/* CRITICAL FIXES */
 /* ==================== */
-/* Add this at the VERY END of the file */
-.prose section.bg-primary\/10 {
+/* Fix for orange box */
+.prose .bg-primary\/10 {
   background-color: rgba(255, 172, 28, 0.1) !important;
 }
 
-.prose section .text-primary {
+.prose .text-primary {
   color: #FFAC1C !important;
 }
 
-.dark .prose section.bg-primary\/10 {
+/* Fix for dark mode orange box */
+.dark .prose .bg-primary\/10 {
   background-color: rgba(229, 148, 25, 0.1) !important;
 }
 
-.dark .prose section .text-primary {
+.dark .prose .text-primary {
   color: #E59419 !important;
+}
+
+/* Fix for heading colors */
+.prose h1,
+.prose h2,
+.prose h3 {
+  color: #FFAC1C !important;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3 {
+  color: #E59419 !important;
+}
+
+/* Fix for spacing issues */
+.prose > div > *:first-child {
+  margin-top: 0 !important;
+}
+
+.prose > div > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Fix for empty paragraph spacing */
+.prose p:empty {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
