@@ -40,23 +40,6 @@
     scroll-margin-top: 5rem;
   }
   
-  /* ORANGE BOX STYLING FOR ALL BLOG ARTICLES */
-  .prose .bg-primary\/10 {
-    background-color: rgba(255, 172, 28, 0.1) !important; /* Light orange background */
-  }
-  
-  .prose .text-primary {
-    color: #FFAC1C !important; /* Orange text */
-  }
-  
-  .dark .prose .bg-primary\/10 {
-    background-color: rgba(229, 148, 25, 0.1) !important; /* Dark mode light orange */
-  }
-  
-  .dark .prose .text-primary {
-    color: #E59419 !important; /* Dark mode orange text */
-  }
-  
   /* ARTICLE CONTENT STYLING */
   .prose > div > * {
     margin-top: 1rem !important;
@@ -349,4 +332,24 @@
   .font-size-reduced a:hover {
     color: #f59e0b !important;
   }
+}
+
+/* ==================== */
+/* ORANGE BOX FIX (HIGH SPECIFICITY) */
+/* ==================== */
+/* Add this at the VERY END of the file */
+.prose section.bg-primary\/10 {
+  background-color: rgba(255, 172, 28, 0.1) !important;
+}
+
+.prose section .text-primary {
+  color: #FFAC1C !important;
+}
+
+.dark .prose section.bg-primary\/10 {
+  background-color: rgba(229, 148, 25, 0.1) !important;
+}
+
+.dark .prose section .text-primary {
+  color: #E59419 !important;
 }
