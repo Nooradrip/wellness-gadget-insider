@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       );
     }
     
-    // 5. Extract articles from categories - FIXED LOGIC
+    // 5. Extract articles from categories
     let allArticles: any[] = [];
     let totalArticles = 0;
 
@@ -49,12 +49,11 @@ export async function GET(request: Request) {
     if (rawData.mainCategories && Array.isArray(rawData.mainCategories)) {
       console.log(`Search API: Found ${rawData.mainCategories.length} categories`);
       
-      // NEW: Properly extract articles from each category
+      // Properly extract articles from each category
       rawData.mainCategories.forEach((category: any) => {
-        // Check for both possible locations of articles
         const articlesInCategory = 
-          category.articles || // Most likely location
-          category.data?.articles; // Alternative location
+          category.articles || 
+          category.data?.articles;
         
         if (articlesInCategory && Array.isArray(articlesInCategory)) {
           allArticles = [...allArticles, ...articlesInCategory];
@@ -86,7 +85,7 @@ export async function GET(request: Request) {
 
     console.log(`Search API: Searching for "${query}"`);
     
-    // 6. Perform search
+    // 6. Enhanced scoring system
     const results = allArticles
       .filter(article => {
         if (!article?.slug) {
@@ -99,18 +98,46 @@ export async function GET(request: Request) {
         const title = (article.pageTitle || article.title || '').toLowerCase();
         const metaDesc = (article.metaDescription || '').toLowerCase();
         const description = (article.description || '').toLowerCase();
-        const allText = `${title} ${metaDesc} ${description}`;
         
+        // Initialize scoring
         let score = 0;
         
-        // Simple matching - remove scoring complexity for now
-        const hasMatch = 
-          title.includes(query) ||
-          metaDesc.includes(query) ||
-          description.includes(query) ||
-          allText.includes(query);
+        // 1. Exact matches get highest priority
+        if (title === query) score += 10;
+        if (metaDesc === query) score += 8;
+        if (description === query) score += 6;
         
-        if (hasMatch) score = 1; // Simple binary match
+        // 2. Field-specific partial matches
+        if (title.includes(query)) {
+          score += 6;
+          // Boost if match is near beginning
+          if (title.indexOf(query) < 20) score += 2;
+        }
+        
+        if (metaDesc.includes(query)) {
+          score += 4;
+          // Boost for exact phrase match
+          if (metaDesc.includes(` ${query} `)) score += 2;
+        }
+        
+        if (description.includes(query)) {
+          score += 2;
+          // Boost for multiple occurrences
+          const count = (description.match(new RegExp(query, 'g')) || []).length;
+          if (count > 1) score += count;
+        }
+        
+        // 3. Category boosts
+        if (article.mainCategoryName?.toLowerCase().includes(query)) {
+          score += 3;
+        }
+        
+        // 4. Freshness boost (if articles have dates)
+        if (article.publishedDate) {
+          const pubDate = new Date(article.publishedDate);
+          const ageInMonths = (Date.now() - pubDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+          if (ageInMonths < 6) score += 3; // Recent articles
+        }
         
         return {
           url: `/blog/${article.slug}`,
@@ -120,10 +147,13 @@ export async function GET(request: Request) {
           score
         };
       })
-      .filter(item => item.score > 0);
+      .filter(item => item.score > 0)
+      // Sort by score descending
+      .sort((a, b) => b.score - a.score);
 
     console.log(`Search API: Found ${results.length} matches`);
     
+    // Return results with scores
     return NextResponse.json(results);
     
   } catch (error) {
