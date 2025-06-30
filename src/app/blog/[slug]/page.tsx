@@ -163,34 +163,58 @@ export default async function BlogPostPage({
     );
   };
 
+  // 4. FIX: Ensure proper heading classes
+  const fixHeadings = (html: string) => {
+    let processedHtml = html;
+    
+    // Add proper classes to headings
+    processedHtml = processedHtml.replace(
+      /<h1>/g, 
+      '<h1 class="font-bold text-3xl mb-4 mt-8 text-primary">'
+    );
+    processedHtml = processedHtml.replace(
+      /<h2>/g, 
+      '<h2 class="font-bold text-2xl mb-4 mt-8 text-primary">'
+    );
+    processedHtml = processedHtml.replace(
+      /<h3>/g, 
+      '<h3 class="font-bold text-xl mb-4 mt-8 text-primary">'
+    );
+    
+    return processedHtml;
+  };
+
   const renderArticleContent = () => {
     try {
       let processedHtml = article.isPreformatted
         ? article.htmlBody
         : parseInternalLinks(article.htmlBody);
       
-      // 4. FIX: Clean empty paragraphs first
+      // 5. FIX: Clean empty paragraphs first
       processedHtml = cleanEmptyParagraphs(processedHtml);
       
-      // 5. FIX: Add asterisk after cleaning
+      // 6. FIX: Add asterisk after cleaning
       processedHtml = addAsteriskToTopPick(processedHtml);
       
-      // 6. FIX: Add proper classes to headings
-      processedHtml = processedHtml.replace(
-        /<h2>/g, 
-        '<h2 class="font-bold text-2xl mb-4 mt-8 text-primary">'
-      );
+      // 7. FIX: Apply heading fixes
+      processedHtml = fixHeadings(processedHtml);
       
-      // 7. FIX: Ensure primary text classes are applied
+      // 8. FIX: Ensure primary text classes are applied
       processedHtml = processedHtml.replace(
         /class="text-primary"/g, 
         'class="text-primary"'
       );
       
-      // 8. FIX: Ensure background classes are applied
+      // 9. FIX: Ensure background classes are applied
       processedHtml = processedHtml.replace(
         /class="bg-primary\/10"/g, 
         'class="bg-primary/10"'
+      );
+      
+      // 10. FIX: Add specific class for top pick section
+      processedHtml = processedHtml.replace(
+        /<section class="my-0 p-6 bg-primary\/10 rounded-lg shadow-md mb-0">/g,
+        '<section class="top-pick-section">'
       );
       
       const sanitizedHtml = sanitizeHtml(processedHtml, {
@@ -205,7 +229,9 @@ export default async function BlogPostPage({
           iframe: ['src', 'width', 'height', 'frameborder', 'allowfullscreen'],
           div: ['class', 'style'],
           span: ['class', 'style'],
+          h1: ['class', 'style'],
           h2: ['class', 'style'],
+          h3: ['class', 'style'],
           table: ['class', 'style', 'border'],
           thead: ['class', 'style', 'border'],
           tbody: ['class', 'style', 'border'],
@@ -488,7 +514,7 @@ export default async function BlogPostPage({
           />
         </div>
 
-        {/* 9. FIX: Wrap content in prose container */}
+        {/* Wrap content in prose container */}
         <div className="prose max-w-none">
           <div className="mb-4 md:mb-6 text-base md:text-lg text-gray-700 dark:text-gray-300">
             {article.description}

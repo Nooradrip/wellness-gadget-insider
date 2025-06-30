@@ -338,8 +338,11 @@
 /* CRITICAL FIXES (MUST BE AT THE END) */
 /* ==================== */
 /* Fix for orange box */
-.bg-primary\/10 {
+section.bg-primary\/10, .bg-primary\/10 {
   background-color: rgba(255, 172, 28, 0.1) !important;
+  padding: 1.5rem !important;
+  border-radius: 0.5rem !important;
+  margin: 1.5rem 0 !important;
 }
 
 .text-primary {
@@ -347,7 +350,7 @@
 }
 
 /* Fix for dark mode orange box */
-.dark .bg-primary\/10 {
+.dark section.bg-primary\/10, .dark .bg-primary\/10 {
   background-color: rgba(229, 148, 25, 0.1) !important;
 }
 
@@ -355,13 +358,32 @@
   color: #E59419 !important;
 }
 
-/* Fix for heading colors */
-.prose h1,
-.prose h2,
-.prose h3 {
+/* Fix for heading sizes and colors */
+.prose h1 {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
   color: #FFAC1C !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1.5rem !important;
 }
 
+.prose h2 {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  color: #FFAC1C !important;
+  margin-top: 1.8rem !important;
+  margin-bottom: 1.2rem !important;
+}
+
+.prose h3 {
+  font-size: 1.75rem !important;
+  font-weight: 600 !important;
+  color: #FFAC1C !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Fix for dark mode headings */
 .dark .prose h1,
 .dark .prose h2,
 .dark .prose h3 {
@@ -386,4 +408,46 @@ p:empty {
 .prose > div {
   padding-top: 0.5rem !important;
   padding-bottom: 0.5rem !important;
+}
+
+/* Ensure proper heading hierarchy */
+h1 {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+}
+
+h2 {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+}
+
+h3 {
+  font-size: 1.75rem !important;
+  font-weight: 600 !important;
+}
+
+/* Fix for top pick section */
+.top-pick-section {
+  background-color: rgba(255, 172, 28, 0.1) !important;
+  border-left: 4px solid #FFAC1C !important;
+  padding: 1.5rem !important;
+  border-radius: 0.5rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+.dark .top-pick-section {
+  background-color: rgba(229, 148, 25, 0.1) !important;
+  border-left-color: #E59419 !important;
+}
+
+.top-pick-heading {
+  color: #FFAC1C !important;
+  font-size: 1.8rem !important;
+  font-weight: 700 !important;
+  margin-top: 0 !important;
+  margin-bottom: 1rem !important;
+}
+
+.dark .top-pick-heading {
+  color: #E59419 !important;
 }
