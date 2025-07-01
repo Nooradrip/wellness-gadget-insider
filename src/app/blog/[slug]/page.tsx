@@ -54,7 +54,7 @@ const typedBlogData = blogData as {
     id: string;
     url: string;
     text: string;
-  }[];
+    }[];
 };
 
 export async function generateStaticParams() {
@@ -128,12 +128,6 @@ export default async function BlogPostPage({
     notFound();
   }
 
-  // 1. FIX: Clean empty paragraphs from content
-  const cleanEmptyParagraphs = (html: string) => {
-    return html.replace(/<p>\s*<\/p>/g, '');
-  };
-
-  // 2. FIX: Add asterisk to Top Pick
   const addAsteriskToTopPick = (html: string) => {
     return html.replace(
       /(Pet Gadget Insider's Top Pick)/g, 
@@ -141,7 +135,6 @@ export default async function BlogPostPage({
     );
   };
 
-  // 3. FIX: Parse internal links
   const parseInternalLinks = (html: string) => {
     const internalLinks = typedBlogData.internalLinks || [];
     const linkMap = new Map(
@@ -163,58 +156,18 @@ export default async function BlogPostPage({
     );
   };
 
-  // 4. FIX: Ensure proper heading classes
-  const fixHeadings = (html: string) => {
-    let processedHtml = html;
-    
-    // Add proper classes to headings
-    processedHtml = processedHtml.replace(
-      /<h1>/g, 
-      '<h1 class="font-bold text-3xl mb-4 mt-8 text-primary">'
-    );
-    processedHtml = processedHtml.replace(
-      /<h2>/g, 
-      '<h2 class="font-bold text-2xl mb-4 mt-8 text-primary">'
-    );
-    processedHtml = processedHtml.replace(
-      /<h3>/g, 
-      '<h3 class="font-bold text-xl mb-4 mt-8 text-primary">'
-    );
-    
-    return processedHtml;
-  };
-
   const renderArticleContent = () => {
     try {
       let processedHtml = article.isPreformatted
         ? article.htmlBody
         : parseInternalLinks(article.htmlBody);
       
-      // 5. FIX: Clean empty paragraphs first
-      processedHtml = cleanEmptyParagraphs(processedHtml);
-      
-      // 6. FIX: Add asterisk after cleaning
       processedHtml = addAsteriskToTopPick(processedHtml);
       
-      // 7. FIX: Apply heading fixes
-      processedHtml = fixHeadings(processedHtml);
-      
-      // 8. FIX: Ensure primary text classes are applied
+      // Add custom class to all H2 elements
       processedHtml = processedHtml.replace(
-        /class="text-primary"/g, 
-        'class="text-primary"'
-      );
-      
-      // 9. FIX: Ensure background classes are applied
-      processedHtml = processedHtml.replace(
-        /class="bg-primary\/10"/g, 
-        'class="bg-primary/10"'
-      );
-      
-      // 10. FIX: Add specific class for top pick section
-      processedHtml = processedHtml.replace(
-        /<section class="my-0 p-6 bg-primary\/10 rounded-lg shadow-md mb-0">/g,
-        '<section class="top-pick-section">'
+        /<h2(\s+[^>]*)?>/gi, 
+        '<h2$1 class="blog-heading">'
       );
       
       const sanitizedHtml = sanitizeHtml(processedHtml, {
@@ -229,9 +182,7 @@ export default async function BlogPostPage({
           iframe: ['src', 'width', 'height', 'frameborder', 'allowfullscreen'],
           div: ['class', 'style'],
           span: ['class', 'style'],
-          h1: ['class', 'style'],
           h2: ['class', 'style'],
-          h3: ['class', 'style'],
           table: ['class', 'style', 'border'],
           thead: ['class', 'style', 'border'],
           tbody: ['class', 'style', 'border'],
@@ -365,7 +316,7 @@ export default async function BlogPostPage({
   const authorSchema = generateAuthorSchema();
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8 max-w-2xl">
+    <div className="container mx-auto px-4 py-6 md:py-8 max-w-2xl blog-article">
       <Script
         id="article-schema"
         type="application/ld+json"
@@ -486,8 +437,8 @@ export default async function BlogPostPage({
           currentPage={article.pageTitle}
         />
 
-        <header className="mb-6 md:mb-8">
-          <h1 className="!text-4xl !md:text-5xl font-bold mb-3 md:mb-4 text-primary">
+        <header className="mb-4">
+          <h1 className="reset-font-size !text-4xl !md:text-5xl font-bold">
             {article.pageTitle}
           </h1>
           <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 gap-2 sm:gap-4 mb-3 md:mb-4">
@@ -514,9 +465,8 @@ export default async function BlogPostPage({
           />
         </div>
 
-        {/* Wrap content in prose container */}
         <div className="prose max-w-none">
-          <div className="mb-4 md:mb-6 text-base md:text-lg text-gray-700 dark:text-gray-300">
+          <div className="mb-2 text-base md:text-lg text-gray-700 dark:text-gray-300">
             {article.description}
           </div>
           {renderArticleContent()}
@@ -539,7 +489,7 @@ export default async function BlogPostPage({
         )}
       </div>
 
-      <div className="mt-6 md:mt-8 italic text-sm text-gray-600 dark:text-gray-400">
+      <div className="mt-4 italic text-sm text-gray-600 dark:text-gray-400 author-note">
         <p>
           * Pet Gadget Insider uses data-driven technology to present the products 
           Amazon says are top-rated best sellers. Out of those, I choose one I think 
