@@ -6,7 +6,7 @@ import Footer from '@/components/Layout/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { Analytics } from '@vercel/analytics/react'; // Added Vercel Analytics
+import { Analytics } from '@vercel/analytics/react';
 
 const font = Poppins({
   subsets: ['latin'],
@@ -16,11 +16,11 @@ const font = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Pet Gadget Insider',
+    default: 'Wellness Gadget Insider', // Changed to new site name
     template: '%s',
   },
-  description: 'Expert reviews of smart pet supplies and gadgets',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  description: 'Expert reviews of wellness technology and health gadgets', // Updated description
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://wellness-gadget-insider.vercel.app'), // Updated default URL
 }
 
 export default function RootLayout({
@@ -31,7 +31,10 @@ export default function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <head>
-        {/* Google Analytics Script - EXACTLY as provided */}
+        {/* Google Search Console Verification */}
+        <meta name="google-site-verification" content="35_OX-Xb7UFbNy2iQm3FcqOozBI9kIdbyXyKUlemNGQ" />
+        
+        {/* Fixed Google Analytics Script */}
         <Script 
           strategy="afterInteractive" 
           src="https://www.googletagmanager.com/gtag/js?id=G-R2XEL04Y6X" 
@@ -41,21 +44,18 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-R2XEL04Y6X');
+            gtag('config', 'G-R2XEL04Y6X', {
+              page_path: window.location.pathname,
+            });
           `}
         </Script>
         
-        {/* Googlebot Meta Tag - Added for better crawling */}
+        {/* SEO Meta Tags */}
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        
-        {/* Robots Meta Tag - Added to accelerate crawling (all search engines) */}
         <meta name="robots" content="all" />
-        
-        {/* Bing Verification */}
-        <meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" />
-        
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="theme-color" content="#FFAC1C" />
+        
         {/* Favicons */}
         <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/favicon-16x16.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/favicon-32x32.png" />
@@ -72,7 +72,7 @@ export default function RootLayout({
           <Footer />
         </div>
         <ScrollToTop />
-        <Analytics /> {/* Added Vercel Analytics component */}
+        <Analytics />
       </body>
     </html>
   )
