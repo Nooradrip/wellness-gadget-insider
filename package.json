@@ -1,12 +1,13 @@
 {
-  "name": "pet-gadget-insider",
+  "name": "wellness-gadget-insider",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev",
     "lint": "eslint . --ext .ts,.tsx",
-    "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
+    "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build && npm run generate-sitemap",
+    "generate-sitemap": "curl https://wellness-gadget-insider.vercel.app/sitemap.xml > public/sitemap.xml",
     "start": "node ./node_modules/next/dist/bin/next start",
     "vercel-build": "npm run build",
     "postinstall": "npm run build"
