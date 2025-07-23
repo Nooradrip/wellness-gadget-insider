@@ -3,7 +3,7 @@ import blogData from '@/data/blog-articles.json';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const BASE_URL = 'https://petgadgetinsider.org';
+const BASE_URL = 'https://wellness-gadget-insider.vercel.app';
 
 // Helper to get file modification dates
 async function getLastmod(filePath) {
@@ -53,15 +53,7 @@ export async function GET() {
       changefreq: 'weekly'
     }));
 
-    // 3. Process all subcategories
-    const subcategoryPages = blogData.subCategories.map(subcategory => ({
-      url: `/blog/category/${subcategory.mainCategorySlug}/${subcategory.slug}`,
-      lastmod: new Date().toISOString().split('T')[0],
-      priority: 0.75,
-      changefreq: 'weekly'
-    }));
-
-    // 4. Process all articles with actual content dates
+    // 3. Process all articles with actual content dates
     const articlePages = blogData.articles.map(article => ({
       url: `/blog/${article.slug}`,
       lastmod: article.dateModified || article.datePublished || new Date().toISOString().split('T')[0],
@@ -69,15 +61,14 @@ export async function GET() {
       changefreq: 'weekly'
     }));
 
-    // 5. Combine all URLs
+    // 4. Combine all URLs
     const allPages = [
       ...staticPages,
       ...categoryPages,
-      ...subcategoryPages,
       ...articlePages
     ];
 
-    // 6. Generate XML
+    // 5. Generate XML
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
       <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
         ${allPages.map(page => `
