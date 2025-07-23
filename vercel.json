@@ -6,14 +6,14 @@
       "use": "@vercel/next"
     },
     {
-      "src": "src/app/sitemap.xml/route.js",
+      "src": "src/app/sitemaps/route.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/sitemap.xml",
-      "dest": "/src/app/sitemap.xml/route.js"
+      "src": "/sitemaps/sitemap.xml",
+      "dest": "/src/app/sitemaps/route.js"
     },
     {
       "src": "/(.*)",
