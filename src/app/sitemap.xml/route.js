@@ -5,47 +5,54 @@ import path from 'path';
 
 const BASE_URL = 'https://wellness-gadget-insider.vercel.app';
 
-// Helper to get file modification dates
 async function getLastmod(filePath) {
   try {
     const stats = await fs.stat(path.join(process.cwd(), filePath));
-    return stats.mtime.toISOString().split('T')[0]; // YYYY-MM-DD format
-  } catch {
-    return new Date().toISOString().split('T')[0]; // Fallback to today
+    return stats.mtime.toISOString().split('T')[0];
+  } catch (err) {
+    console.warn(`Could not get lastmod for ${filePath}:`, err.message);
+    return new Date().toISOString().split('T')[0];
   }
 }
 
 export async function GET() {
   try {
-    // 1. Static pages with auto-detected dates
-    const staticPages = [
+    console.log('Generating sitemap...'); // Debug log
+    
+    // 1. Static pages
+    const staticPages = await Promise.all([
       {
         url: '/',
-        lastmod: await getLastmod('app/page.tsx'),
+        file: 'app/page.tsx',
         priority: 1.0,
         changefreq: 'daily'
       },
       {
-        url: '/blog',  // NEW: Added blog index page
-        lastmod: await getLastmod('app/blog/page.tsx'),
+        url: '/blog',
+        file: 'app/blog/page.tsx',
         priority: 0.85,
         changefreq: 'daily'
       },
       {
         url: '/about',
-        lastmod: await getLastmod('app/about/page.tsx'),
+        file: 'app/about/page.tsx',
         priority: 0.9,
         changefreq: 'monthly'
       },
       {
         url: '/faq',
-        lastmod: await getLastmod('app/faq/page.tsx'),
+        file: 'app/faq/page.tsx',
         priority: 0.85,
         changefreq: 'monthly'
       }
-    ];
+    ].map(async (page) => ({
+      url: page.url,
+      lastmod: await getLastmod(page.file),
+      priority: page.priority,
+      changefreq: page.changefreq
+    })));
 
-    // 2. Process all main categories (using current date as fallback)
+    // 2. Category pages
     const categoryPages = blogData.mainCategories.map(category => ({
       url: `/blog/category/${category.slug}`,
       lastmod: new Date().toISOString().split('T')[0],
@@ -53,7 +60,7 @@ export async function GET() {
       changefreq: 'weekly'
     }));
 
-    // 3. Process all articles with actual content dates
+    // 3. Article pages
     const articlePages = blogData.articles.map(article => ({
       url: `/blog/${article.slug}`,
       lastmod: article.dateModified || article.datePublished || new Date().toISOString().split('T')[0],
@@ -61,14 +68,10 @@ export async function GET() {
       changefreq: 'weekly'
     }));
 
-    // 4. Combine all URLs
-    const allPages = [
-      ...staticPages,
-      ...categoryPages,
-      ...articlePages
-    ];
+    // Combine all
+    const allPages = [...staticPages, ...categoryPages, ...articlePages];
 
-    // 5. Generate XML
+    // Generate XML
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
       <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
         ${allPages.map(page => `
@@ -82,18 +85,24 @@ export async function GET() {
       </urlset>
     `;
 
+    console.log('Sitemap generated successfully'); // Debug log
+    
     return new Response(sitemap, {
       headers: {
-        'Content-Type': 'text/xml',
-        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600' // 24hr cache
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600'
       }
     });
 
   } catch (error) {
-    console.error('Sitemap generation error:', error);
-    return new Response(`<error>Sitemap generation failed</error>`, {
+    console.error('Sitemap generation failed:', error);
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?>
+      <error>
+        <message>Sitemap generation failed</message>
+        <detail>${error.message}</detail>
+      </error>`, {
       status: 500,
-      headers: { 'Content-Type': 'text/xml' }
+      headers: { 'Content-Type': 'application/xml' }
     });
   }
 }
