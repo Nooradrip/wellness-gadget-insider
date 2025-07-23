@@ -64,7 +64,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="512x512" href="/images/favicons/android-chrome-512x512.png" />
         
         {/* Sitemap Reference */}
-        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+        <link rel="sitemap" type="application/xml" href="/sitemaps/sitemap.xml"s />
       </head>
       <body className={`${font.className} antialiased`}>
         <div className="min-h-screen flex flex-col">

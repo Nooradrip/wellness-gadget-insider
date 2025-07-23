@@ -4,20 +4,6 @@
     {
       "src": "package.json",
       "use": "@vercel/next"
-    },
-    {
-      "src": "src/app/sitemaps/route.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/sitemaps/sitemap.xml",
-      "dest": "/src/app/sitemaps/route.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/"
     }
   ],
   "build": {

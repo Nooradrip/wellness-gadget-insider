@@ -3,4 +3,4 @@ Allow: /
 Disallow: /*-git-*
 Disallow: /preview/*
 
-Sitemap: https://wellness-gadget-insider.vercel.app/sitemaps/sitemap.xml
+Sitemap: https://wellness-gadget-insider.vercel.app/sitemap.xml
