@@ -16,11 +16,11 @@ const font = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Wellness Gadget Insider', // Changed to new site name
+    default: 'Wellness Gadget Insider',
     template: '%s',
   },
-  description: 'Expert reviews of wellness technology and health gadgets', // Updated description
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://wellness-gadget-insider.vercel.app'), // Updated default URL
+  description: 'Expert reviews of wellness technology and health gadgets',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://wellness-gadget-insider.vercel.app'),
 }
 
 export default function RootLayout({
@@ -62,6 +62,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/images/favicons/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/images/favicons/android-chrome-192x192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/images/favicons/android-chrome-512x512.png" />
+        
+        {/* Sitemap Reference */}
+        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
       </head>
       <body className={`${font.className} antialiased`}>
         <div className="min-h-screen flex flex-col">

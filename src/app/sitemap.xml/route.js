@@ -1,9 +1,13 @@
 // app/sitemap.xml/route.js
-import blogData from '@/data/blog-articles.json';
 import { promises as fs } from 'fs';
 import path from 'path';
 
 const BASE_URL = 'https://wellness-gadget-insider.vercel.app';
+const SITEMAP_PATH = '/sitemap-v1.xml'; // New versioned name
+
+// Force dynamic route behavior - bypass all caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getLastmod(filePath) {
   try {
@@ -17,34 +21,22 @@ async function getLastmod(filePath) {
 
 export async function GET() {
   try {
-    console.log('Generating sitemap...');
+    console.log('Generating fresh sitemap...');
     
-    // 1. Static pages
+    // DYNAMIC JSON READING - FIXES STALE DATA ISSUE
+    const blogData = JSON.parse(
+      await fs.readFile(
+        path.join(process.cwd(), 'data', 'blog-articles.json'),
+        'utf-8'
+      )
+    );
+
+    // Static pages
     const staticPages = await Promise.all([
-      {
-        url: '/',
-        file: 'app/page.tsx',
-        priority: 1.0,
-        changefreq: 'daily'
-      },
-      {
-        url: '/blog',
-        file: 'app/blog/page.tsx',
-        priority: 0.85,
-        changefreq: 'daily'
-      },
-      {
-        url: '/about',
-        file: 'app/about/page.tsx',
-        priority: 0.9,
-        changefreq: 'monthly'
-      },
-      {
-        url: '/faq',
-        file: 'app/faq/page.tsx',
-        priority: 0.85,
-        changefreq: 'monthly'
-      }
+      { url: '/', file: 'app/page.tsx', priority: 1.0, changefreq: 'daily' },
+      { url: '/blog', file: 'app/blog/page.tsx', priority: 0.85, changefreq: 'daily' },
+      { url: '/about', file: 'app/about/page.tsx', priority: 0.9, changefreq: 'monthly' },
+      { url: '/faq', file: 'app/faq/page.tsx', priority: 0.85, changefreq: 'monthly' }
     ].map(async (page) => ({
       url: page.url,
       lastmod: await getLastmod(page.file),
@@ -52,7 +44,7 @@ export async function GET() {
       changefreq: page.changefreq
     })));
 
-    // 2. Category pages
+    // Category pages
     const categoryPages = blogData.mainCategories.map(category => ({
       url: `/blog/category/${category.slug}`,
       lastmod: new Date().toISOString().split('T')[0],
@@ -60,7 +52,7 @@ export async function GET() {
       changefreq: 'weekly'
     }));
 
-    // 3. Article pages
+    // Article pages
     const articlePages = blogData.articles.map(article => ({
       url: `/blog/${article.slug}`,
       lastmod: article.dateModified || article.datePublished || new Date().toISOString().split('T')[0],
@@ -71,7 +63,7 @@ export async function GET() {
     // Combine all
     const allPages = [...staticPages, ...categoryPages, ...articlePages];
 
-    // Generate XML - CRITICAL FIX: Proper XML formatting
+    // Generate XML
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allPages.map(page => `<url>
@@ -87,7 +79,7 @@ ${allPages.map(page => `<url>
     return new Response(sitemap, {
       headers: {
         'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600'
+        'Cache-Control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=60' // Reduced cache time
       }
     });
 
@@ -99,7 +91,10 @@ ${allPages.map(page => `<url>
   <detail>${error.message}</detail>
 </error>`, {
       status: 500,
-      headers: { 'Content-Type': 'application/xml' }
+      headers: { 
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'no-store, max-age=0' // Prevent caching errors
+      }
     });
   }
 }
