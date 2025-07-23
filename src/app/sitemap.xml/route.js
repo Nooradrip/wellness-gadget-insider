@@ -1,10 +1,9 @@
-// src/app/sitemap.xml/route.js
 import { promises as fs } from 'fs';
 import path from 'path';
 
 const BASE_URL = 'https://wellness-gadget-insider.vercel.app';
 
-// Force dynamic route behavior - bypass all caching
+// Force dynamic route behavior
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -22,13 +21,16 @@ export async function GET() {
   try {
     console.log('Generating fresh sitemap...');
     
-    // CORRECTED PATH FOR JSON FILE
-    const blogData = JSON.parse(
-      await fs.readFile(
-        path.join(process.cwd(), 'src', 'data', 'blog-articles.json'), // Updated path
-        'utf-8'
-      )
+    // Robust path handling for Vercel environment
+    const jsonPath = path.join(
+      process.cwd(), 
+      process.env.NODE_ENV === 'production' 
+        ? 'src/data/blog-articles.json' 
+        : 'src/data/blog-articles.json'
     );
+    
+    console.log('Reading blog data from:', jsonPath);
+    const blogData = JSON.parse(await fs.readFile(jsonPath, 'utf-8'));
 
     // Static pages
     const staticPages = await Promise.all([
@@ -84,10 +86,21 @@ ${allPages.map(page => `<url>
 
   } catch (error) {
     console.error('Sitemap generation failed:', error);
+    
+    // Enhanced error information
+    let additionalInfo = '';
+    try {
+      const files = await fs.readdir(path.join(process.cwd(), 'src/data'));
+      additionalInfo = `Files in src/data: ${files.join(', ')}`;
+    } catch (dirError) {
+      additionalInfo = `Directory error: ${dirError.message}`;
+    }
+    
     return new Response(`<?xml version="1.0" encoding="UTF-8"?>
 <error>
   <message>Sitemap generation failed</message>
   <detail>${error.message}</detail>
+  <additional>${additionalInfo}</additional>
 </error>`, {
       status: 500,
       headers: { 
