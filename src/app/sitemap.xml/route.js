@@ -22,12 +22,7 @@ export async function GET() {
     console.log('Generating fresh sitemap...');
     
     // Robust path handling for Vercel environment
-    const jsonPath = path.join(
-      process.cwd(), 
-      process.env.NODE_ENV === 'production' 
-        ? 'src/data/blog-articles.json' 
-        : 'src/data/blog-articles.json'
-    );
+    const jsonPath = path.join(process.cwd(), 'public', 'data', 'blog-articles.json');
     
     console.log('Reading blog data from:', jsonPath);
     const blogData = JSON.parse(await fs.readFile(jsonPath, 'utf-8'));
