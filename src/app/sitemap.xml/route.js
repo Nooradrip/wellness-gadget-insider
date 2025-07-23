@@ -17,7 +17,7 @@ async function getLastmod(filePath) {
 
 export async function GET() {
   try {
-    console.log('Generating sitemap...'); // Debug log
+    console.log('Generating sitemap...');
     
     // 1. Static pages
     const staticPages = await Promise.all([
@@ -71,21 +71,18 @@ export async function GET() {
     // Combine all
     const allPages = [...staticPages, ...categoryPages, ...articlePages];
 
-    // Generate XML
+    // Generate XML - CRITICAL FIX: Proper XML formatting
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-        ${allPages.map(page => `
-          <url>
-            <loc>${BASE_URL}${page.url}</loc>
-            <lastmod>${page.lastmod}</lastmod>
-            <changefreq>${page.changefreq}</changefreq>
-            <priority>${page.priority}</priority>
-          </url>
-        `).join('')}
-      </urlset>
-    `;
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allPages.map(page => `<url>
+  <loc>${BASE_URL}${page.url}</loc>
+  <lastmod>${page.lastmod}</lastmod>
+  <changefreq>${page.changefreq}</changefreq>
+  <priority>${page.priority}</priority>
+</url>`).join('\n')}
+</urlset>`;
 
-    console.log('Sitemap generated successfully'); // Debug log
+    console.log('Sitemap generated successfully');
     
     return new Response(sitemap, {
       headers: {
@@ -97,10 +94,10 @@ export async function GET() {
   } catch (error) {
     console.error('Sitemap generation failed:', error);
     return new Response(`<?xml version="1.0" encoding="UTF-8"?>
-      <error>
-        <message>Sitemap generation failed</message>
-        <detail>${error.message}</detail>
-      </error>`, {
+<error>
+  <message>Sitemap generation failed</message>
+  <detail>${error.message}</detail>
+</error>`, {
       status: 500,
       headers: { 'Content-Type': 'application/xml' }
     });
