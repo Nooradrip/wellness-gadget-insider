@@ -1,3 +1,4 @@
+// next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -19,7 +20,6 @@ const nextConfig = {
     minimumCacheTTL: 3600,
   },
   experimental: {
-    // Changed from boolean to object
     serverActions: {}, 
   },
   webpack: (config) => {

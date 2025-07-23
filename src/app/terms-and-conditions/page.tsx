@@ -4,14 +4,14 @@ const TermsAndConditionsPage = () => {
       <section className="mb-8">
         <h1 className="text-3xl font-bold mb-6">Terms and Conditions</h1>
         <p className="mb-6">
-          Welcome to our Pet Gadget Insider! Please read the following terms and conditions carefully before using this website. By accessing or using our site, you agree to be bound by these terms.
+          Welcome to Wellness Gadget Insider! Please read the following terms and conditions carefully before using this website. By accessing or using our site, you agree to be bound by these terms.
         </p>
       </section>
 
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">1. Content Disclaimer</h2>
         <p>
-          All content provided on this website is intended for general informational purposes regarding pet products and lifestyle. We are not licensed veterinarians, nor do we provide professional medical or veterinary advice. Always consult with a qualified veterinarian or specialist before making decisions about your pet's health or treatment.
+          All content provided on this website is intended for general informational purposes regarding wellness products and lifestyle. We are not licensed healthcare practitioners, nor do we provide professional medical. Always consult with a qualified healthcare provider or specialist before making decisions about your health or treatment.
         </p>
       </section>
 

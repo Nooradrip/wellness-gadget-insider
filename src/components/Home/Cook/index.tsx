@@ -8,7 +8,7 @@ const Cook = () => {
       <div className='container mx-auto lg:max-w-[--breakpoint-xl] md:max-w-[--breakpoint-md] px-4'>
         <div className='absolute right-0 bottom-[-18%] hidden lg:block'>
           <Image
-            src='/images/Logo/pet-gadget-insider-logo.png'
+            src='/images/Logo/wellness-gadget-insider-logo.png'
             alt='pet-gadget-logo'
             width={231}
             height={311}
@@ -18,8 +18,8 @@ const Cook = () => {
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-5'>
           <div className='col-span-6 flex justify-start'>
             <Image
-              src='/images/cat.png'
-              alt='cat'
+              src='/images/wellness18.jpg'
+              alt='wellness skincare'
               width={636}
               height={808}
             />
@@ -29,16 +29,16 @@ const Cook = () => {
               explore with us
             </p>
             <h2 className='text-3xl lg:text-5xl font-semibold text-black dark:text-white text-start'>
-              Discover the best in pet care.
+              Discover the best in wellness devices.
             </h2>
             <p className='text-black/50 dark:text-white/50 md:text-lg font-normal mb-10 text-start mt-6'>
-              Explore with Pet Gadget Insider as we uncover the best in Amazon pet supplies. Discover pet friendly gadgets that smarten up your pet care so that you and your pets stay happy. 
+              Explore with Wellness Gadget Insider as we uncover the best in Amazon wellness with skincare devices and home medical equipment. Discover gadgets that make your home wellness routine easy so that you stay at the height of your wellbeing. 
             </p>
             <p className='text-black/50 dark:text-white/50 md:text-lg font-normal mb-10 text-start mt-1'>
-              From the latest automatic pet feeder to innovative pet care essentials, we curate products that simplify your routine. Stay updated on trending pet feeder technology and explore tips for pet supplies that enhance your daily pet care journey.
+              With the best in devices for wellness, we curate products that help reduce pain and stress. Stay updated on trending wellness technology and explore tips for using devices that enhance your wellbeing.
             </p>
             <p className='text-black/50 dark:text-white/50 md:text-lg font-normal mb-10 text-start mt-1'>
-              Our passion for excellence and commitment to quality ensure that you'll find the pet supplies you're after. Search by topic or visit our Pet Supplies Reviews.
+              Our passion for excellence and commitment to quality ensure that you'll find the best gadgets for wellness. Search by topic or visit our Health and Wellness Reviews.
             </p>
             <Link 
               href="/blog" 

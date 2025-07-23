@@ -3,9 +3,31 @@ import Image from 'next/image';
 import SearchBar from './SearchBar';
 
 export default function Header() {
+  // Mobile menu items (same as desktop for consistency)
+  const mobileMenuItems = [
+    { name: 'Health and Wellness Reviews', path: '/blog' },
+    { name: 'FAQ', path: '/faq' },
+    { name: 'About', path: '/about' }
+  ];
+
   return (
     <header className="bg-white shadow-sm">
       <div className="container mx-auto px-4 py-2">
+        {/* Mobile Horizontal Menu (shows only on mobile) */}
+        <div className="md:hidden mb-2 overflow-x-auto">
+          <nav className="flex space-x-4 py-2">
+            {mobileMenuItems.map((item) => (
+              <Link 
+                key={item.path}
+                href={item.path}
+                className="whitespace-nowrap text-gray-700 hover:text-blue-600 font-medium text-sm"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
         {/* Single Row Layout */}
         <div className="flex flex-col md:flex-row justify-between items-center">
           {/* Left Side - Logo and Nav */}
@@ -13,8 +35,8 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
               <Image
-                src="/images/Logo/pet-gadget-insider-logo.png"
-                alt="Pet Gadget Insider"
+                src="/images/Logo/wellness-gadget-insider-logo.png"
+                alt="Wellness Gadget Insider"
                 width={300}
                 height={100}
                 priority
@@ -25,17 +47,17 @@ export default function Header() {
               />
             </Link>
             
-            {/* Navigation */}
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-4">
-              <Link href="/blog" className="text-gray-700 hover:text-blue-600 font-medium text-base">
-                Pet Supplies Reviews
-              </Link>
-              <Link href="/faq" className="text-gray-700 hover:text-blue-600 font-medium text-base">
-                FAQ
-              </Link>
-              <Link href="/about" className="text-gray-700 hover:text-blue-600 font-medium text-base">
-                About
-              </Link>
+              {mobileMenuItems.map((item) => (
+                <Link 
+                  key={item.path}
+                  href={item.path}
+                  className="text-gray-700 hover:text-blue-600 font-medium text-base"
+                >
+                  {item.name}
+                </Link>
+              ))}
             </nav>
           </div>
 

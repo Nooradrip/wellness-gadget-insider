@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import blogData from "@/data/blog-articles.json";
+import Image from "next/image";
 import { Metadata } from "next";
 
 interface BlogCategory {
@@ -9,15 +10,8 @@ interface BlogCategory {
   name: string;
   titleTag: string;
   metaDescription: string;
-}
-
-interface BlogSubCategory {
-  slug: string;
-  name: string;
   description: string;
-  mainCategorySlug: string;
-  titleTag?: string;
-  metaDescription?: string;
+  categoryPageContent?: string;
 }
 
 interface BlogArticle {
@@ -25,19 +19,13 @@ interface BlogArticle {
   pageTitle: string;
   description: string;
   featuredImageUrl: string;
+  featuredImageAlt: string;
   mainCategorySlug: string;
-  subCategorySlug: string;
 }
 
 interface BlogData {
   mainCategories: BlogCategory[];
-  subCategories: BlogSubCategory[];
   articles: BlogArticle[];
-  internalLinks?: {
-    id: string;
-    url: string;
-    text: string;
-  }[];
 }
 
 interface PageProps {
@@ -71,7 +59,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    metadataBase: new URL('https://petgadgetinsider.org'),
+    metadataBase: new URL('https://wellnessgadgetinsider.org'),
     title: mainCategory.titleTag,
     description: mainCategory.metaDescription,
     openGraph: {
@@ -87,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default function CategoryPage({ params }: { params: { category: string } }) {
   const { category } = params;
-  const { mainCategories, subCategories, articles } = blogData as BlogData;
+  const { mainCategories, articles } = blogData as BlogData;
 
   const categorySlug = category?.trim().toLowerCase() || '';
   
@@ -99,78 +87,75 @@ export default function CategoryPage({ params }: { params: { category: string } 
     notFound();
   }
 
-  const filteredSubCategories = subCategories.filter((sub) => {
-    const mainCatSlug = sub.mainCategorySlug?.trim().toLowerCase() ?? "";
-    return mainCatSlug === categorySlug;
-  });
-
-  if (filteredSubCategories.length === 0) {
-    notFound();
-  }
-
-  const subCategoriesWithCounts = filteredSubCategories.map((sub) => {
-    const subSlug = sub.slug?.trim().toLowerCase() ?? "";
-
-    const articleCount = articles.filter((article) => {
-      const artMainCat = article.mainCategorySlug?.trim().toLowerCase() ?? "";
-      const artSubCat = article.subCategorySlug?.trim().toLowerCase() ?? "";
-      return artMainCat === categorySlug && artSubCat === subSlug;
-    }).length;
-
-    return { ...sub, articleCount };
-  });
-
-  const totalArticles = subCategoriesWithCounts.reduce(
-    (sum, sub) => sum + sub.articleCount,
-    0
+  const filteredArticles = articles.filter(article => 
+    article.mainCategorySlug?.trim().toLowerCase() === categorySlug
   );
 
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumbs
         links={[
-          { href: '/', text: 'Home' }, // Added Home
-          { href: '/blog', text: 'Pet Supplies Reviews' } // Changed from 'Blog'
+          { href: '/', text: 'Home' },
+          { href: '/blog', text: 'Wellness Gadget Reviews' }
         ]}
         currentPage={mainCategory.name}
       />
 
-      <h1 className="text-3xl font-bold mb-6">{mainCategory.name}</h1>
-
-      {totalArticles === 0 ? (
-        <p className="text-gray-600">
-          No articles available in this category.
+      <h1 className="text-3xl font-bold mb-4">{mainCategory.name}</h1>
+      
+      {/* Category description */}
+      {mainCategory.description && (
+        <p className="text-lg text-gray-700 mb-8 max-w-4xl">
+          {mainCategory.description}
         </p>
+      )}
+
+      {filteredArticles.length === 0 ? (
+        <p className="text-gray-600">No articles available in this category.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {subCategoriesWithCounts.map((sub) =>
-            sub.articleCount > 0 ? (
-              <Link
-                key={sub.slug}
-                href={`/blog/category/${encodeURIComponent(
-                  category
-                )}/${encodeURIComponent(sub.slug)}`}
-                className="block border rounded p-4 hover:shadow transition-shadow"
-                prefetch={false}
-              >
-                <h2 className="text-xl font-bold">{sub.name}</h2>
-                <p className="mt-2 text-gray-600">{sub.description}</p>
-                <p className="mt-1 text-sm text-sky-600">
-                  {sub.articleCount} article{sub.articleCount === 1 ? "" : "s"}
-                </p>
-              </Link>
-            ) : (
-              <div key={sub.slug} className="block border rounded p-4">
-                <h2 className="text-xl font-bold">{sub.name}</h2>
-                <p className="mt-2 text-gray-600">{sub.description}</p>
-                <p className="mt-1 text-sm italic text-gray-500">
-                  No articles available
-                </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredArticles.map((article) => (
+            <Link
+              key={article.slug}
+              href={`/blog/${encodeURIComponent(article.slug)}`}
+              className="block border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-white"
+              prefetch={false}
+            >
+              <div className="h-36 overflow-hidden bg-gray-100 relative">
+                <Image
+                  src={article.featuredImageUrl}
+                  alt={article.featuredImageAlt || article.pageTitle}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
               </div>
-            )
-          )}
+              
+              <div className="p-4">
+                <h2 className="text-xl font-bold mb-2">{article.pageTitle}</h2>
+                {article.description && (
+                  <p className="text-gray-600 line-clamp-2">{article.description}</p>
+                )}
+              </div>
+            </Link>
+          ))}
         </div>
       )}
+
+      {/* Extended category page content */}
+      {mainCategory.categoryPageContent && (
+        <div className="mt-16 max-w-4xl mx-auto">
+          <div 
+            className="prose dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: mainCategory.categoryPageContent }} 
+          />
+        </div>
+      )}
+
+      {/* Medical disclaimer */}
+      <div className="mt-8 max-w-4xl mx-auto italic text-gray-600 dark:text-gray-400">
+        Everything on Wellness Gadget Insider is for informational purposes. We don't diagnose, provide medical advice or treatment. Please consult your healthcare practitioner if you intend to use any of the devices discussed for health and wellness.
+      </div>
     </div>
   );
 }

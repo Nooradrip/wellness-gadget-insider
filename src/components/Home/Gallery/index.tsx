@@ -12,7 +12,7 @@ const Gallery = () => {
             Meet the Experts
           </p>
           <h2 className='text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white'>
-            Amazon's Top Rated Pet Feeders
+            Amazon's Top Rated Gadgets for Wellness
           </h2>
         </div>
 
@@ -59,11 +59,9 @@ const Gallery = () => {
                   </ul>
 
                   <Link
-                    href={product.productLink}
-                    target='_blank'
-                    rel='noopener noreferrer'
+                    href={product.internalLink} // Changed to internalLink
                     className='block w-full text-center bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition-colors'>
-                    View on Amazon
+                    View More Info
                   </Link>
                 </div>
               </div>

@@ -128,13 +128,6 @@ export default async function BlogPostPage({
     notFound();
   }
 
-  const addAsteriskToTopPick = (html: string) => {
-    return html.replace(
-      /(Pet Gadget Insider's Top Pick)/g, 
-      '$1*'
-    );
-  };
-
   const parseInternalLinks = (html: string) => {
     const internalLinks = typedBlogData.internalLinks || [];
     const linkMap = new Map(
@@ -162,14 +155,65 @@ export default async function BlogPostPage({
         ? article.htmlBody
         : parseInternalLinks(article.htmlBody);
       
-      processedHtml = addAsteriskToTopPick(processedHtml);
-      
-      // Add custom class to all H2 elements
+      // 1. Ensure consistent Top Pick box styling
       processedHtml = processedHtml.replace(
-        /<h2(\s+[^>]*)?>/gi, 
-        '<h2$1 class="blog-heading">'
+        /<section\s+class="[^"]*my-0[^"]*"[^>]*>/gi,
+        '<section style="background-color: rgba(255, 172, 28, 0.1); padding: 1.5rem; border-radius: 0.5rem; margin: 1.5rem 0;">'
       );
       
+      // 2. Apply H2 styling with new orange color (#E59419)
+      processedHtml = processedHtml.replace(
+        /<h2(\s*[^>]*)>/gi, 
+        (match, attrs) => {
+          // Remove any existing font-size and color styles
+          let cleanedAttrs = attrs
+            .replace(/(style\s*=\s*["'][^"']*font-size[^"']*["'])/gi, '')
+            .replace(/(style\s*=\s*["'][^"']*color[^"']*["'])/gi, '')
+            .replace(/(class\s*=\s*["'][^"']*text-\S+[^"']*["'])/gi, '');
+          
+          // Add our fixed styling with !important and new orange
+          const styleAttr = 'style="font-size: 1.5rem !important; font-weight: bold !important; color: #E59419 !important; margin: 1.5rem 0 1rem !important;"';
+          
+          // Add class for additional CSS protection
+          const classAttr = 'class="blog-heading"';
+          
+          return `<h2${cleanedAttrs} ${classAttr} ${styleAttr}>`;
+        }
+      );
+      
+      // 3. Comprehensive spacing normalization
+      processedHtml = processedHtml
+        // Remove empty elements (including non-breaking spaces)
+        .replace(/<p>(\s|&nbsp;)*<\/p>/gi, '')
+        .replace(/<div[^>]*>(\s|&nbsp;)*<\/div>/gi, '')
+        .replace(/<section[^>]*>(\s|&nbsp;)*<\/section>/gi, '')
+        .replace(/<h[1-6]>(\s|&nbsp;)*<\/h[1-6]>/gi, '')
+        // Remove all spacing classes
+        .replace(/\b(mt|mb|pt|pb|ml|mr|pl|pr|mx|my|px|py|space|gap)-\d+\b/gi, '')
+        // Remove multiple line breaks and excessive whitespace
+        .replace(/\n\s*\n/g, '\n')
+        .replace(/>\s{2,}</g, '><')
+        // Normalize spacing between paragraphs
+        .replace(/<\/p>\s*<p>/gi, '</p><p>')
+        // Remove <br> tags near block boundaries
+        .replace(/(<br\s*\/?>\s*)(<\/[a-zA-Z]+>)/gi, '$2')
+        .replace(/(<[a-zA-Z]+[^>]*>)(\s*<br\s*\/?>\s*)/gi, '$1')
+        // Remove empty divs and sections
+        .replace(/<div[^>]*>\s*<\/div>/gi, '')
+        .replace(/<section[^>]*>\s*<\/section>/gi, '')
+        // Remove extra spacing around headings
+        .replace(/>\s+<h[1-6]/g, '><h$1')
+        .replace(/<\/h[1-6]>\s+</g, '</h$1><')
+        // Remove extra spacing around paragraphs
+        .replace(/>\s+<p/g, '><p')
+        .replace(/<\/p>\s+</g, '</p><')
+        // Remove extra spacing around divs
+        .replace(/>\s+<div/g, '><div')
+        .replace(/<\/div>\s+</g, '</div><')
+        // Remove extra spacing around lists
+        .replace(/>\s+<(ul|ol)/g, '><$1')
+        .replace(/<\/(ul|ol)>\s+</g, '</$1><');
+
       const sanitizedHtml = sanitizeHtml(processedHtml, {
         allowedTags: [
           ...sanitizeHtml.defaults.allowedTags,
@@ -183,6 +227,7 @@ export default async function BlogPostPage({
           div: ['class', 'style'],
           span: ['class', 'style'],
           h2: ['class', 'style'],
+          section: ['class', 'style'],
           table: ['class', 'style', 'border'],
           thead: ['class', 'style', 'border'],
           tbody: ['class', 'style', 'border'],
@@ -302,6 +347,35 @@ export default async function BlogPostPage({
     };
   };
 
+  // NEW: Generate Review Schema
+  const generateReviewSchema = () => {
+    if (!article.amazon_link) return null;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "Review",
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: "5",
+        bestRating: "5"
+      },
+      author: {
+        "@type": "Person",
+        name: "Nick Garcia"
+      },
+      itemReviewed: {
+        "@type": "Product",
+        name: article.pageTitle
+      },
+      datePublished: article.datePublished,
+      reviewBody: article.description.substring(0, 200) + "...",
+      publisher: {
+        "@type": "Organization",
+        name: "Pet Gadget Insider"
+      }
+    };
+  };
+
   const generateAuthorSchema = () => {
     return {
       "@type": "Person",
@@ -313,6 +387,7 @@ export default async function BlogPostPage({
 
   const faqSchema = generateFAQSchema();
   const productSchema = generateProductSchema();
+  const reviewSchema = generateReviewSchema(); // NEW
   const authorSchema = generateAuthorSchema();
 
   return (
@@ -375,6 +450,17 @@ export default async function BlogPostPage({
         />
       )}
 
+      {/* NEW: Review Schema */}
+      {reviewSchema && (
+        <Script
+          id="review-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(reviewSchema),
+          }}
+        />
+      )}
+
       <Script
         id="breadcrumb-schema"
         type="application/ld+json"
@@ -387,31 +473,31 @@ export default async function BlogPostPage({
                 "@type": "ListItem",
                 position: 1,
                 name: "Home",
-                item: "https://petgadgetinsider.org",
+                item: "https://wellnessgadgetinsider.vercel.app",
               },
               {
                 "@type": "ListItem",
                 position: 2,
-                name: "Pet Supplies Reviews",
-                item: "https://petgadgetinsider.org/blog",
+                name: "Health and Wellness Reviews",
+                item: "https://wellnessgadgetinsider.vercel.app/blog",
               },
               {
                 "@type": "ListItem",
                 position: 3,
                 name: article.mainCategoryName,
-                item: `https://petgadgetinsider.org/blog/category/${article.mainCategorySlug}`,
+                item: `https://wellnessgadgetinsider.vercel.app/blog/category/${article.mainCategorySlug}`,
               },
               {
                 "@type": "ListItem",
                 position: 4,
                 name: article.subCategoryName,
-                item: `https://petgadgetinsider.org/blog/category/${article.mainCategorySlug}/${article.subCategorySlug}`,
+                item: `https://wellnessgadgetinsider.vercel.app/blog/category/${article.mainCategorySlug}/${article.subCategorySlug}`,
               },
               {
                 "@type": "ListItem",
                 position: 5,
                 name: article.pageTitle,
-                item: `https://petgadgetinsider.org/blog/${article.slug}`,
+                item: `https://wellnessgadgetinsider.vercel.app/blog/${article.slug}`,
               },
             ],
           }),
@@ -422,7 +508,7 @@ export default async function BlogPostPage({
         <Breadcrumbs
           links={[
             { href: "/", text: "Home" },
-            { href: "/blog", text: "Pet Supplies Reviews" },
+            { href: "/blog", text: "Health and Wellness Reviews" },
             {
               href: `/blog/category/${article.mainCategorySlug}`,
               text: article.mainCategoryName,
@@ -466,14 +552,14 @@ export default async function BlogPostPage({
         </div>
 
         <div className="prose max-w-none">
-          <div className="mb-2 text-base md:text-lg text-gray-700 dark:text-gray-300">
+          <div className="mb-4 text-base md:text-lg text-gray-700 dark:text-gray-300">
             {article.description}
           </div>
           {renderArticleContent()}
         </div>
 
         {article.amazon_link && (
-          <div className="mt-6 md:mt-8 text-center">
+          <div className="mt-8 text-center">
             <a
               href={article.amazon_link}
               target="_blank"
@@ -489,15 +575,15 @@ export default async function BlogPostPage({
         )}
       </div>
 
-      <div className="mt-4 italic text-sm text-gray-600 dark:text-gray-400 author-note">
+      <div className="mt-6 italic text-sm text-gray-600 dark:text-gray-400 author-note">
         <p>
-          * Pet Gadget Insider uses data-driven technology to present the products 
+          * Wellness Gadget Insider is offering information, not medical advice or diagnoses. Please consult your medical professional before using the devices we review. We use unbiased data-driven technology to present the products 
           Amazon says are top-rated best sellers. Out of those, I choose one I think 
           you'll like the most. Once you've received it, let me know what you think! -{" "}
           <Link href="/about" className="text-amber-600 hover:text-amber-700">
-            Nick
+            Nick AI
           </Link>
-          , Pet Gadget Insider
+          , Wellness Gadget Insider
         </p>
       </div>
     </div>

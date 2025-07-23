@@ -3,61 +3,62 @@ export interface ExpertProduct {
   name: string;
   imgSrc: string;
   productLink: string;
+  internalLink: string; // Added this new field
   price: string;
   features: string[];
 }
 
 export const ExpertData: ExpertProduct[] = [
   {
-    profession: 'Automatic Cat Feeder',
-    name: 'PETLIBRO',
-    imgSrc: 'https://m.media-amazon.com/images/I/41IyqubT+HL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0B1TMLL3F',
-    price: '$69.99',
+    profession: 'Leg Compression Massager',
+    name: 'ITCPRL',
+    imgSrc: 'https://m.media-amazon.com/images/I/71MsgtkbTRL._AC_SX569_.jpg',
+    internalLink: '/blog/best-leg-compression-massager', // Added internal link
+    price: '$99.99',
     features: [
-      "Smart APP Control: Wi-Fi enabled for remote feeding",
-      "10 meals per day with 1-48 portions per meal",
-      "10-second voice recording for meal calls",
-      "5L capacity with freshness preservation"
+      "3 pressure intensities",
+      "Heat therapy",
+      "Fits all sizes",
+      "Full leg massager"
     ]
   },
   {
-    profession: 'Automatic Feeder',
-    name: 'IMIPAW',
-    imgSrc: 'https://m.media-amazon.com/images/I/31smh+Fyk0L._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0BR5VST5N',
-    price: '$35.99',
+    profession: 'Red Light Therapy Facial Massager',
+    name: 'Doset',
+    imgSrc: 'https://m.media-amazon.com/images/I/71e7e75Ko5L._SX425_.jpg',
+    internalLink: '/blog/best-red-light-therapy-facial-massager', // Added internal link
+    price: '$39.99',
     features: [
-      "Programmable timed feeding",
-      "3L/12 cup capacity",
-      "Dual power supply (adapter + batteries)",
-      "Easy to use LCD screen"
+      "Curved arc massage head",
+      "Vibration, red light, heating",
+      "USB Rechargable",
+      "Better absorption of creams/serums"
     ]
   },
   {
-    profession: 'Automatic Feeder',
-    name: 'VOLUAS',
-    imgSrc: 'https://m.media-amazon.com/images/I/31FCol5w8TL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B09LD2CD1L',
-    price: '$54.99',
+    profession: 'Sleep Aid Device',
+    name: 'Magicteam',
+    imgSrc: 'https://m.media-amazon.com/images/I/71GiXGIsylL._AC_SX679_.jpg',
+    internalLink: '/blog/best-sleep-aid-device', // Added internal link
+    price: '$21.99',
     features: [
-      "4L/16.9 cup capacity",
-      "Voice record meal call (10 seconds)",
-      "1-4 meals with 0-40 portion choices",
-      "Wired or battery power"
+      "20 non-looping sleep sounds",
+      "32 volume levels",
+      "Timer and memory settings",
+      "Adults and kids"
     ]
   },
   {
-    profession: 'Dual Cat Feeder',
-    name: 'oneisall',
-    imgSrc: 'https://m.media-amazon.com/images/I/41IyqubT+HL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0C5X2G933',
-    price: '$50.99',
+    profession: 'Pain Management for Back Pain',
+    name: 'Guganas',
+    imgSrc: 'https://m.media-amazon.com/images/I/717M05QlZKL._AC_SX569_.jpg',
+    internalLink: '/blog/best-device-for-back-pain-management', // Added internal link
+    price: '$118.59',
     features: [
-      "Designed for 2 cats (separate bowls)",
-      "5L/20 cups capacity",
-      "10-second voice recorder",
-      "Up to 6 meals a day"
+      "Smart airbag traction",
+      "3-level heat",
+      "20 electrotherapy levels",
+      "Like a professional back cracker"
     ]
   }
 ];
@@ -70,23 +71,23 @@ export interface ProductFeature {
 
 export const FeaturesData: ProductFeature[] = [
   {
-    imgSrc: '/images/dog6.png',
-    heading: "Portion Control",
-    subheading: "Give your pet exact dietary requirements",
+    imgSrc: '/images/wellness1.jpg',
+    heading: "Massage",
+    subheading: "Relieve tension",
   },
   {
-    imgSrc: '/images/dog5.png',
-    heading: "Smart App",
-    subheading: "Check who ate how much on your phone",
+    imgSrc: '/images/wellness6.jpg',
+    heading: "Lymph Flow",
+    subheading: "Reduce appearance of cellulite",
   },
   {
-    imgSrc: '/images/Best-Automatic-Cat-Feeder-with-a-Timer-for-Precise-Wet-Food-Feeding-Schedules.png',
-    heading: "Timers",
-    subheading: "Set feeding schedules for times/day or slow feeding",
+    imgSrc: '/images/wellness12.jpg',
+    heading: "Skin Glow",
+    subheading: "Get glowing skin",
   },
   {
-    imgSrc: '/images/dog4.png',
-    heading: "Two-Way Audio",
-    subheading: "Communicate with your pet and hear responses",
+    imgSrc: '/images/wellness3.jpg',
+    heading: "Pain Relief",
+    subheading: "Relieve pain in specific areas",
   }
 ];

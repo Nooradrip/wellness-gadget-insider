@@ -13,7 +13,7 @@ const Features = () => {
           FEATURES
         </p>
         <h2 className="text-2xl lg:text-3xl font-semibold text-black dark:text-white mx-auto max-w-3xl">
-          We review trending features in smart pet supplies.
+          We review trending gadgets for wellness.
         </h2>
       </div>
 
@@ -22,22 +22,24 @@ const Features = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {FeaturesData.map((items, i) => (
             <div
-              className="p-6 pt-20 relative rounded-3xl bg-gradient-to-b from-black/5 to-white dark:from-white/5 dark:to-black"
+              className="p-6 pt-8 rounded-3xl bg-gradient-to-b from-gray-100 to-white dark:from-gray-800 dark:to-black shadow-sm relative overflow-hidden group transition-all duration-300"
               key={i}
             >
-              {/* Adjusted image positioning */}
-              <div className="rounded-full flex justify-center absolute -top-16 left-0 right-0 mx-auto w-3/4">
-                <Image
-                  src={items.imgSrc}
-                  alt={items.heading}
-                  width={200}
-                  height={200}
-                  className="object-contain h-auto"
-                />
+              {/* Image placement with full oval visible */}
+              <div className="w-full flex justify-center mb-6 relative z-10">
+                <div className="w-40 h-40 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden shadow-lg">
+                  <Image
+                    src={items.imgSrc}
+                    alt={items.heading}
+                    width={160}
+                    height={160}
+                    className="object-contain transition-transform group-hover:scale-105"
+                  />
+                </div>
               </div>
 
               {/* Card content */}
-              <div className="text-center">
+              <div className="text-center z-0 relative">
                 <h3 className="text-xl font-semibold text-black dark:text-white">
                   {items.heading}
                 </h3>

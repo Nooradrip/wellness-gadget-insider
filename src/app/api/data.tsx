@@ -1,9 +1,9 @@
-// types.ts (should be in your project types)
+// data.ts
 export interface ProductFeature {
   imgSrc: string;
   heading: string;
   subheading: string;
-  path: string; // Added path property
+  path: string;
 }
 
 export interface ExpertProduct {
@@ -15,31 +15,30 @@ export interface ExpertProduct {
   features: string[];
 }
 
-// data.ts
 export const FeaturesData: ProductFeature[] = [
   {
-    imgSrc: '/images/dog6.png',
-    heading: "Portion Control",
-    subheading: "Exact dietary requirements for pet care",
-    path: "/search/portion%20control"
+    imgSrc: '/images/wellness11.jpg',
+    heading: "Home Medical Equipment",
+    subheading: "Medical equipment to aid the body and bodily functions",
+    path: "/search/medical%20equipment"
   },
   {
-    imgSrc: '/images/dog5.png',
-    heading: "Smart App",
-    subheading: "Pet supplies that say which pet ate how much",
-    path: "/search/smart%20app"
+    imgSrc: '/images/wellness5.jpg',
+    heading: "Pain Management",
+    subheading: "Ten machines and other devices for sciatica, back and neck pain",
+    path: "/search/pain"
   },
   {
-    imgSrc: '/images/Best-Automatic-Cat-Feeder-with-a-Timer-for-Precise-Wet-Food-Feeding-Schedules.png',
-    heading: "Timers",
-    subheading: "Feeding schedules for pet friendly supplies",
-    path: "/search/timers"
+    imgSrc: '/images/wellness13.jpg',
+    heading: "Skincare Devices",
+    subheading: "Red light therapy and microcurrent devices for anti aging",
+    path: "/search/skincare"
   },
   {
-    imgSrc: '/images/dog4.png',
-    heading: "Two-Way Audio",
-    subheading: "Communicate with your pet using your pet feeder",
-    path: "/search/two-way%20audio"
+    imgSrc: '/images/wellness8.jpg',
+    heading: "Stress Relief Methods",
+    subheading: "Vagus nerve stimulators, massagers and sleep devices to help with stress reduction",
+    path: "/search/stress"
   }
 ];
 
@@ -48,7 +47,7 @@ export const ExpertData: ExpertProduct[] = [
     profession: 'Automatic Cat Feeder',
     name: 'PETLIBRO',
     imgSrc: 'https://m.media-amazon.com/images/I/41IyqubT+HL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0B1TMLL3F?tag=petgadgetinsider-20&th=1',
+    productLink: 'https://www.amazon.com/dp/B0B1TMLL3F/?tag=petgadgetinsider',
     price: '$69.99',
     features: [
       "Smart APP Control: Wi-Fi enabled for remote feeding",
@@ -61,7 +60,7 @@ export const ExpertData: ExpertProduct[] = [
     profession: 'Automatic Feeder',
     name: 'IMIPAW',
     imgSrc: 'https://m.media-amazon.com/images/I/31smh+Fyk0L._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0BR5VST5N?tag=petgadgetinsider-20&th=1',
+    productLink: 'https://www.amazon.com/dp/B0BR5VST5N/?tag=petgadgetinsider',
     price: '$35.99',
     features: [
       "Programmable timed feeding",
@@ -74,7 +73,7 @@ export const ExpertData: ExpertProduct[] = [
     profession: 'Automatic Feeder',
     name: 'VOLUAS',
     imgSrc: 'https://m.media-amazon.com/images/I/31FCol5w8TL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B09LD2CD1L?tag=petgadgetinsider-20&th=1',
+    productLink: 'https://www.amazon.com/dp/B09LD2CD1L/?tag=petgadgetinsider',
     price: '$54.99',
     features: [
       "4L/16.9 cup capacity",
@@ -87,7 +86,7 @@ export const ExpertData: ExpertProduct[] = [
     profession: 'Dual Cat Feeder',
     name: 'oneisall',
     imgSrc: 'https://m.media-amazon.com/images/I/41IyqubT+HL._SL500_.jpg',
-    productLink: 'https://www.amazon.com/dp/B0C5X2G933?tag=petgadgetinsider-20&th=1',
+    path: "/blog/smart-app-best-automatic-cat-feeder-app-control",
     price: '$50.99',
     features: [
       "Designed for 2 cats (separate bowls)",
@@ -97,3 +96,20 @@ export const ExpertData: ExpertProduct[] = [
     ]
   }
 ];
+
+// DIAGNOSTIC UTILITY (Add this to your homepage component)
+/*
+export const LinkDebugger = () => {
+  useEffect(() => {
+    const links = document.querySelectorAll('a[href*="amazon.com"]');
+    links.forEach(link => {
+      console.log(`Link text: ${link.textContent}`);
+      console.log(`Original href: ${link.getAttribute('href')}`);
+      console.log(`Resolved href: ${link.href}`);
+      console.log('---');
+    });
+  }, []);
+
+  return null;
+};
+*/

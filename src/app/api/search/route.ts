@@ -85,7 +85,11 @@ export async function GET(request: Request) {
 
     console.log(`Search API: Searching for "${query}"`);
     
-    // 6. Enhanced scoring system with guaranteed perfect matches
+    // Split query into individual keywords
+    const queryKeywords = query.split(/\s+/).filter(Boolean);
+    const totalKeywords = queryKeywords.length;
+    
+    // 6. Enhanced scoring system with keyword-based matching
     const results = allArticles
       .filter(article => {
         if (!article?.slug) {
@@ -98,52 +102,105 @@ export async function GET(request: Request) {
         const title = (article.pageTitle || article.title || '').toLowerCase();
         const metaDesc = (article.metaDescription || '').toLowerCase();
         const description = (article.description || '').toLowerCase();
+        const breadcrumbs = (article.mainCategoryName || article.mainCategory || '').toLowerCase();
         
         // Initialize scoring (0-100)
         let score = 0;
         
-        // 1. Title matches (heaviest weight)
+        // Track keyword matches
+        let titleMatches = 0;
+        let metaMatches = 0;
+        let descMatches = 0;
+        let breadcrumbMatches = 0;
+        
+        // 1. Check for exact phrase matches first (highest priority)
         if (title === query) {
           // Perfect match in title = instant 100%
           score = 100;
-        } else if (title.includes(query)) {
-          score += 60;
-          // Boost if match is near beginning
-          if (title.indexOf(query) < 15) score += 10;
+        } else if (metaDesc === query) {
+          // Perfect meta match = max 90%
+          score = 90;
+        } else {
+          // 2. Keyword-based matching for partial/out-of-order matches
+          queryKeywords.forEach(keyword => {
+            // Title matches
+            if (title.includes(keyword)) {
+              titleMatches++;
+              // Position bonuses
+              if (title.startsWith(keyword)) score += 8;
+              else if (title.indexOf(keyword) < 15) score += 5;
+            }
+            
+            // Meta description matches
+            if (metaDesc.includes(keyword)) {
+              metaMatches++;
+              score += 4;
+            }
+            
+            // Description matches
+            if (description.includes(keyword)) {
+              descMatches++;
+              score += 3;
+            }
+            
+            // Breadcrumb matches
+            if (breadcrumbs.includes(keyword)) {
+              breadcrumbMatches++;
+              score += 6;
+            }
+          });
+          
+          // 3. Calculate density bonuses
+          const titleDensity = titleMatches / totalKeywords;
+          const metaDensity = metaMatches / totalKeywords;
+          const descDensity = descMatches / totalKeywords;
+          
+          score += titleDensity * 30;
+          score += metaDensity * 15;
+          score += descDensity * 10;
+          
+          // 4. Full match bonuses
+          if (titleMatches === totalKeywords) score += 25;
+          if (metaMatches === totalKeywords) score += 15;
+          if (descMatches === totalKeywords) score += 10;
         }
         
-        // 2. Meta description matches
-        if (metaDesc === query) {
-          // Perfect meta match = max 90% unless already perfect
-          score = Math.max(score, 90);
-        } else if (metaDesc.includes(query)) {
-          score += 30;
-          // Boost for exact phrase match
-          if (metaDesc.includes(` ${query} `)) score += 10;
+        // 5. Partial exact phrase matches (medium priority)
+        if (score < 100) {
+          if (title.includes(query)) {
+            score = Math.max(score, 60);
+            // Boost if match is near beginning
+            if (title.indexOf(query) < 15) score += 10;
+          }
+          
+          if (metaDesc.includes(query)) {
+            score = Math.max(score, 30);
+            // Boost for exact phrase match
+            if (metaDesc.includes(` ${query} `)) score += 10;
+          }
+          
+          if (description.includes(query)) {
+            score = Math.max(score, 20);
+            // Boost for multiple occurrences
+            const count = (description.match(new RegExp(query, 'g')) || []).length;
+            if (count > 1) score += Math.min(10, count * 2);
+          }
         }
         
-        // 3. Description matches
-        if (description.includes(query)) {
-          score += 20;
-          // Boost for multiple occurrences
-          const count = (description.match(new RegExp(query, 'g')) || []).length;
-          if (count > 1) score += Math.min(10, count * 2);
-        }
-        
-        // 4. Category matches
+        // 6. Category matches
         if (article.mainCategoryName?.toLowerCase().includes(query)) {
           score += 15;
         }
         
-        // 5. Freshness boost
+        // 7. Freshness boost
         if (article.publishedDate) {
           const pubDate = new Date(article.publishedDate);
           const ageInMonths = (Date.now() - pubDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
           if (ageInMonths < 3) score += 15; // Very recent articles
         }
         
-        // Ensure score is between 10-100 with perfect matches possible
-        score = Math.min(100, Math.max(10, score));
+        // Ensure score is between 0-100 with perfect matches preserved
+        score = Math.min(100, Math.max(0, score));
         
         // Guarantee perfect score for exact title matches
         if (title === query) score = 100;
@@ -151,9 +208,10 @@ export async function GET(request: Request) {
         return {
           url: `/blog/${article.slug}`,
           title: article.pageTitle || article.title,
-          description: article.metaDescription || article.description,
+          // CHANGED: Prioritize main description over metaDescription
+          description: article.description || article.metaDescription,
           breadcrumbs: article.mainCategoryName || article.mainCategory || '',
-          score
+          score: Math.round(score)
         };
       })
       .filter(item => item.score > 0)
@@ -162,7 +220,8 @@ export async function GET(request: Request) {
 
     console.log(`Search API: Found ${results.length} matches`);
     
-    return NextResponse.json(results);
+    // Return top 10 results
+    return NextResponse.json(results.slice(0, 10));
     
   } catch (error) {
     console.error('Search API: Unexpected error', error);

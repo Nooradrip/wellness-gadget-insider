@@ -6,23 +6,23 @@ import Gallery from '@/components/Home/Gallery';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Smart Pet Supplies Reviews | Pet Gadget Insider',
-  description: 'Get the scoop on pet-friendly pet supplies for optimal pet care that\'s fun.',
-  metadataBase: new URL('https://petgadgetinsider.tech'),
+  title: 'Wellness Tech Reviews | Wellness Gadget Insider',
+  description: 'Get the inside scoop on gadgets for wellness and wellbeing.',
+  metadataBase: new URL('https://wellnessgadgetinsider.vercel.app'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Pet Supplies Reviews | Pet Gadget Insider',
-    description: 'Get the inside scoop on pet-friendly pet supplies like automatic pet feeders.',
-    url: 'https://petgadgetinsider.tech',
-    siteName: 'Pet Gadget Insider',
+    title: 'Wellness Tech Reviews | Wellness Gadget Insider',
+    description: 'Get the inside scoop on gadgets for wellness and wellbeing.',
+    url: 'https://wellnessgadgetinsider.vercel.app',
+    siteName: 'Wellness Gadget Insider',
     images: [
       {
-        url: '/images/dogcat.png',
+        url: '/images/wellness17.jpg',
         width: 1200,
         height: 630,
-        alt: 'Pet-friendly pet care gadgets',
+        alt: 'Gadgets for wellness and wellbeing',
       },
     ],
     locale: 'en_US',
@@ -30,9 +30,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Scoop on Smart Pet Supplies | Pet Gadget Insider',
-    description: 'Get the inside story on pet-friendly smart gadgets',
-    images: ['/images/cat.png'],
+    title: 'The Scoop on Gadgets for Wellness | Wellness Gadget Insider',
+    description: 'Get the inside scoop on gadgets for wellness and wellbeing',
+    images: ['/images/wellness18.jpg'],
   },
   robots: {
     index: true,
@@ -49,11 +49,11 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'Pet Gadget Insider',
-  url: 'https://petgadgetinsider.tech',
+  name: 'Wellness Gadget Insider',
+  url: 'https://wellnessgadgetinsider.vercel.app',
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://petgadgetinsider.tech/search?q={search_term_string}',
+    target: 'https://wellnessgadgetinsider.vercel.app/search?q={search_term_string}',
     'query-input': 'required name=search_term_string'
   }
 };
