@@ -1,9 +1,8 @@
-// app/sitemap.xml/route.js
+// src/app/sitemap.xml/route.js
 import { promises as fs } from 'fs';
 import path from 'path';
 
 const BASE_URL = 'https://wellness-gadget-insider.vercel.app';
-const SITEMAP_PATH = '/sitemap-v1.xml'; // New versioned name
 
 // Force dynamic route behavior - bypass all caching
 export const dynamic = 'force-dynamic';
@@ -23,10 +22,10 @@ export async function GET() {
   try {
     console.log('Generating fresh sitemap...');
     
-    // DYNAMIC JSON READING - FIXES STALE DATA ISSUE
+    // CORRECTED PATH FOR JSON FILE
     const blogData = JSON.parse(
       await fs.readFile(
-        path.join(process.cwd(), 'data', 'blog-articles.json'),
+        path.join(process.cwd(), 'src', 'data', 'blog-articles.json'), // Updated path
         'utf-8'
       )
     );
@@ -79,7 +78,7 @@ ${allPages.map(page => `<url>
     return new Response(sitemap, {
       headers: {
         'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=60' // Reduced cache time
+        'Cache-Control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=60'
       }
     });
 
@@ -93,7 +92,7 @@ ${allPages.map(page => `<url>
       status: 500,
       headers: { 
         'Content-Type': 'application/xml',
-        'Cache-Control': 'no-store, max-age=0' // Prevent caching errors
+        'Cache-Control': 'no-store, max-age=0'
       }
     });
   }
