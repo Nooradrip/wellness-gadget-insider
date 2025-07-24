@@ -3,7 +3,6 @@ import fs from 'fs';
 import https from 'https';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { exec } from 'child_process';
 
 // Get current directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -46,25 +45,11 @@ function downloadSitemap(url) {
   });
 }
 
-// Ping search engines
-function pingSearchEngines() {
-  const pingUrl = `https://www.google.com/ping?sitemap=${SITE_URL}/sitemap.xml`;
-  
-  https.get(pingUrl, (res) => {
-    console.log(`Pinged Google: ${res.statusCode}`);
-  }).on('error', (e) => {
-    console.error(`Google ping failed: ${e.message}`);
-  });
-}
-
 // Main function
 async function main() {
   try {
     console.log('Downloading latest sitemap...');
     await downloadSitemap(`${SITE_URL}/sitemap.xml`);
-    
-    console.log('Pinging search engines...');
-    pingSearchEngines();
     
     console.log('✅ Sitemap updated successfully!');
     console.log(`➡️ Sitemap saved to: ${OUTPUT_PATH}`);
