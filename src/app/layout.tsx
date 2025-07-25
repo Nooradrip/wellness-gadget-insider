@@ -34,6 +34,9 @@ export default function RootLayout({
         {/* Google Search Console Verification */}
         <meta name="google-site-verification" content="35_OX-Xb7UFbNy2iQm3FcqOozBI9kIdbyXyKUlemNGQ" />
         
+        {/* Bing Site Verification */}
+        <meta name="msvalidate.01" content="19204980D1F93778EBDFBC1CA9BB0D12" />
+        
         {/* Fixed Google Analytics Script */}
         <Script 
           strategy="afterInteractive" 
@@ -64,7 +67,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="512x512" href="/images/favicons/android-chrome-512x512.png" />
         
         {/* Sitemap Reference */}
-        <link rel="sitemap" type="application/xml" href="/sitemaps/sitemap.xml"s />
+        <link rel="sitemap" type="application/xml" href="/sitemaps/sitemap.xml" />
       </head>
       <body className={`${font.className} antialiased`}>
         <div className="min-h-screen flex flex-col">

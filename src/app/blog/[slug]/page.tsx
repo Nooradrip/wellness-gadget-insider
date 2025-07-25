@@ -490,12 +490,6 @@ export default async function BlogPostPage({
               {
                 "@type": "ListItem",
                 position: 4,
-                name: article.subCategoryName,
-                item: `https://wellnessgadgetinsider.vercel.app/blog/category/${article.mainCategorySlug}/${article.subCategorySlug}`,
-              },
-              {
-                "@type": "ListItem",
-                position: 5,
                 name: article.pageTitle,
                 item: `https://wellnessgadgetinsider.vercel.app/blog/${article.slug}`,
               },
@@ -512,11 +506,6 @@ export default async function BlogPostPage({
             {
               href: `/blog/category/${article.mainCategorySlug}`,
               text: article.mainCategoryName,
-              prefetch: false,
-            },
-            {
-              href: `/blog/category/${article.mainCategorySlug}/${article.subCategorySlug}`,
-              text: article.subCategoryName,
               prefetch: false,
             },
           ]}
